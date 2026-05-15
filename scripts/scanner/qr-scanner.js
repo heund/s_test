@@ -17,6 +17,7 @@ const PAUSE_STATES = new Set([
 
 const SCANNER_DEBUG = true;
 const SCAN_HEARTBEAT_MS = 2000;
+const SCAN_MAX_WIDTH = 720;
 
 export class QRScanner {
     constructor({
@@ -251,10 +252,7 @@ export class QRScanner {
             this.canvas.width = this.videoElement.videoWidth;
             this.context.drawImage(this.videoElement, 0, 0, this.canvas.width, this.canvas.height);
 
-            const imageData = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
-            const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
-                inversionAttempts: 'dontInvert'
-            });
+            const code = this.decodeCanvas();
 
             const rawValue = code && code.data ? code.data.trim() : '';
             if (rawValue && this.canProcess(rawValue)) {
@@ -271,6 +269,47 @@ export class QRScanner {
         }
 
         this.scheduleScan();
+    }
+
+    decodeCanvas() {
+        const fullFrameImageData = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const fullFrameCode = this.decodeImageData(fullFrameImageData, 'full-frame');
+        if (fullFrameCode) {
+            return fullFrameCode;
+        }
+
+        if (this.canvas.width <= SCAN_MAX_WIDTH) {
+            return null;
+        }
+
+        const scale = SCAN_MAX_WIDTH / this.canvas.width;
+        const scaledWidth = Math.round(this.canvas.width * scale);
+        const scaledHeight = Math.round(this.canvas.height * scale);
+        const scaledCanvas = document.createElement('canvas');
+        const scaledContext = scaledCanvas.getContext('2d', { willReadFrequently: true });
+
+        scaledCanvas.width = scaledWidth;
+        scaledCanvas.height = scaledHeight;
+        scaledContext.drawImage(this.canvas, 0, 0, scaledWidth, scaledHeight);
+
+        const scaledImageData = scaledContext.getImageData(0, 0, scaledWidth, scaledHeight);
+        return this.decodeImageData(scaledImageData, 'scaled-frame');
+    }
+
+    decodeImageData(imageData, passName) {
+        const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'attemptBoth'
+        });
+
+        if (code && code.data) {
+            debugScanner('QR decoded', {
+                passName,
+                width: imageData.width,
+                height: imageData.height
+            });
+        }
+
+        return code;
     }
 
     enterError(message) {
