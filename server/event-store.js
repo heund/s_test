@@ -6,6 +6,7 @@ const defaultEventLogPath = path.join(__dirname, 'data', 'event-log.json');
 class EventStore {
     constructor(filePath = process.env.EVENT_LOG_PATH || defaultEventLogPath) {
         this.filePath = filePath;
+        this.controlPath = process.env.CONTROL_STATE_PATH || path.join(path.dirname(filePath), 'control-state.json');
         this.writeQueue = Promise.resolve();
     }
 
@@ -53,6 +54,38 @@ class EventStore {
         try {
             await fs.writeFile(tempPath, content, 'utf8');
             await fs.rename(tempPath, this.filePath);
+        } catch (error) {
+            try {
+                await fs.unlink(tempPath);
+            } catch {
+                // Best-effort cleanup; keep the original write error intact.
+            }
+
+            throw error;
+        }
+    }
+
+    async readControlState() {
+        try {
+            const raw = await fs.readFile(this.controlPath, 'utf8');
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+                ? parsed
+                : { fanStoppedAt: null };
+        } catch {
+            return { fanStoppedAt: null };
+        }
+    }
+
+    async writeControlState(state) {
+        await fs.mkdir(path.dirname(this.controlPath), { recursive: true });
+
+        const tempPath = `${this.controlPath}.${process.pid}.${Date.now()}.tmp`;
+        const content = `${JSON.stringify(state, null, 2)}\n`;
+
+        try {
+            await fs.writeFile(tempPath, content, 'utf8');
+            await fs.rename(tempPath, this.controlPath);
         } catch (error) {
             try {
                 await fs.unlink(tempPath);

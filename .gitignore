@@ -4,6 +4,7 @@ build/
 .cache/
 
 server/data/event-log.json
+server/data/control-state.json
 server/data/*.log.json
 !server/data/event-log.example.json
 

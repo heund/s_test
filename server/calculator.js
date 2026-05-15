@@ -6,9 +6,10 @@ function toTimestamp(value) {
     return Number.isNaN(timestamp) ? null : timestamp;
 }
 
-function calculateState(events, now = new Date()) {
+function calculateState(events, now = new Date(), options = {}) {
     const generatedAt = now.toISOString();
     const nowMs = now.getTime();
+    const ignoreBeforeMs = toTimestamp(options.ignoreEventsBefore);
     const countByLocationId = {};
     const recentCountByLocationId = {};
 
@@ -17,9 +18,13 @@ function calculateState(events, now = new Date()) {
             continue;
         }
 
+        const receivedAtMs = toTimestamp(event.serverReceivedAt);
+        if (ignoreBeforeMs !== null && receivedAtMs !== null && receivedAtMs <= ignoreBeforeMs) {
+            continue;
+        }
+
         countByLocationId[event.locationId] = (countByLocationId[event.locationId] || 0) + 1;
 
-        const receivedAtMs = toTimestamp(event.serverReceivedAt);
         if (receivedAtMs !== null && nowMs - receivedAtMs <= WINDOW_MS && nowMs >= receivedAtMs) {
             recentCountByLocationId[event.locationId] = (recentCountByLocationId[event.locationId] || 0) + 1;
         }

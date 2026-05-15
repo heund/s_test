@@ -84,24 +84,39 @@ async function handleRequest(req, res) {
             return handlePostEvent(req, res);
         }
 
+        if (path === '/api/control/fan-stop') {
+            if (req.method !== 'POST') return sendMethodNotAllowed(res, ['POST', 'OPTIONS']);
+            return handleFanStop(req, res);
+        }
+
         if (path === '/api/public/locations') {
             if (req.method !== 'GET') return sendMethodNotAllowed(res, ['GET', 'OPTIONS']);
             const now = new Date();
             const events = await eventStore.readAll();
-            return sendJson(res, 200, createPublicLocationsState(events, now));
+            const controlState = await eventStore.readControlState();
+            return sendJson(res, 200, createPublicLocationsState(events, now, {
+                ignoreEventsBefore: controlState.fanStoppedAt
+            }));
         }
 
         if (path === '/api/state/current') {
             if (req.method !== 'GET') return sendMethodNotAllowed(res, ['GET', 'OPTIONS']);
+            const now = new Date();
             const events = await eventStore.readAll();
-            return sendJson(res, 200, calculateState(events));
+            const controlState = await eventStore.readControlState();
+            return sendJson(res, 200, calculateState(events, now, {
+                ignoreEventsBefore: controlState.fanStoppedAt
+            }));
         }
 
         if (path === '/api/outputs/fan') {
             if (req.method !== 'GET') return sendMethodNotAllowed(res, ['GET', 'OPTIONS']);
             const now = new Date();
             const events = await eventStore.readAll();
-            const state = calculateState(events, now);
+            const controlState = await eventStore.readControlState();
+            const state = calculateState(events, now, {
+                ignoreEventsBefore: controlState.fanStoppedAt
+            });
             return sendJson(res, 200, createFanOutput(state, now));
         }
 
@@ -109,7 +124,10 @@ async function handleRequest(req, res) {
             if (req.method !== 'GET') return sendMethodNotAllowed(res, ['GET', 'OPTIONS']);
             const now = new Date();
             const events = await eventStore.readAll();
-            const state = calculateState(events, now);
+            const controlState = await eventStore.readControlState();
+            const state = calculateState(events, now, {
+                ignoreEventsBefore: controlState.fanStoppedAt
+            });
             return sendJson(res, 200, createPwaOutput(state, now));
         }
 
@@ -178,6 +196,29 @@ async function handlePostEvent(req, res) {
     return sendJson(res, 201, {
         ok: true,
         event
+    });
+}
+
+async function handleFanStop(req, res) {
+    if (!isControlAuthorized(req)) {
+        req.resume();
+        return sendJson(res, 401, {
+            ok: false,
+            error: 'Unauthorized.'
+        });
+    }
+
+    req.resume();
+
+    const stoppedAt = new Date().toISOString();
+    await eventStore.writeControlState({
+        fanStoppedAt: stoppedAt,
+        updatedAt: stoppedAt
+    });
+
+    return sendJson(res, 200, {
+        ok: true,
+        fanStoppedAt: stoppedAt
     });
 }
 
@@ -345,8 +386,9 @@ function validateEventPayload(payload) {
     };
 }
 
-function createPublicLocationsState(events, now = new Date()) {
+function createPublicLocationsState(events, now = new Date(), options = {}) {
     const nowMs = now.getTime();
+    const ignoreBeforeMs = Date.parse(options.ignoreEventsBefore);
     const recentCountByLocationId = {};
 
     for (const event of events) {
@@ -355,6 +397,10 @@ function createPublicLocationsState(events, now = new Date()) {
         }
 
         const receivedAtMs = Date.parse(event.serverReceivedAt);
+        if (!Number.isNaN(ignoreBeforeMs) && !Number.isNaN(receivedAtMs) && receivedAtMs <= ignoreBeforeMs) {
+            continue;
+        }
+
         if (Number.isNaN(receivedAtMs) || nowMs < receivedAtMs || nowMs - receivedAtMs > PUBLIC_RECENT_WINDOW_MS) {
             continue;
         }
@@ -399,6 +445,25 @@ function findPublicBurstLocation(recentCountByLocationId) {
     }
 
     return burstLocationId;
+}
+
+function isControlAuthorized(req) {
+    const expectedToken = process.env.CONTROL_TOKEN;
+    if (!expectedToken) {
+        return true;
+    }
+
+    const header = req.headers.authorization || '';
+    const [scheme, token] = header.split(' ');
+
+    if (scheme !== 'Bearer' || typeof token !== 'string') {
+        return false;
+    }
+
+    const left = Buffer.from(token, 'utf8');
+    const right = Buffer.from(expectedToken, 'utf8');
+
+    return left.length === right.length && crypto.timingSafeEqual(left, right);
 }
 
 function findSensitiveField(payload) {
