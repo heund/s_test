@@ -1,12 +1,12 @@
 [
   {
     "id": "grandma",
-    "displayName": "설문대할망",
+    "displayName": "Deity 1",
     "active": true
   },
   {
     "id": "hanra",
-    "displayName": "산신",
+    "displayName": "Deity 2",
     "active": true
   }
 ]
