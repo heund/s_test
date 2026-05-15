@@ -131,6 +131,23 @@ async function handleRequest(req, res) {
             return sendJson(res, 200, createPwaOutput(state, now));
         }
 
+        if (path === '/api/debug/fan-control') {
+            if (req.method !== 'GET') return sendMethodNotAllowed(res, ['GET', 'OPTIONS']);
+            const now = new Date();
+            const events = await eventStore.readAll();
+            const controlState = await eventStore.readControlState();
+            const state = calculateState(events, now, {
+                ignoreEventsBefore: controlState.fanStoppedAt
+            });
+
+            return sendJson(res, 200, {
+                generatedAt: now.toISOString(),
+                controlState,
+                interpretedState: state,
+                fanOutput: createFanOutput(state, now)
+            });
+        }
+
         return sendJson(res, 404, {
             ok: false,
             error: 'Route not found.'
@@ -214,6 +231,9 @@ async function handleFanStop(req, res) {
     await eventStore.writeControlState({
         fanStoppedAt: stoppedAt,
         updatedAt: stoppedAt
+    });
+    logEventDebug('Fan stop control cutoff stored.', {
+        fanStoppedAt: stoppedAt
     });
 
     return sendJson(res, 200, {
