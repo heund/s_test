@@ -20,9 +20,15 @@ export class AppView {
         landingLogo.style.opacity = '1';
     }
 
-    hideIntro() {
+    hideIntro(immediate = false) {
         const { landingAnimation } = this.elements;
         if (!landingAnimation) return;
+
+        if (immediate) {
+            landingAnimation.style.display = 'none';
+            landingAnimation.style.opacity = '0';
+            return;
+        }
 
         landingAnimation.style.opacity = '0';
         window.setTimeout(() => {

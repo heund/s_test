@@ -1,0 +1,12 @@
+{
+  "name": "pwa-demo-static-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node pwa-server.js",
+    "check": "node --check pwa-server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

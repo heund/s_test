@@ -22,6 +22,15 @@
     <div id="app">
         <div class="app-shell">
             <div class="app-background" aria-hidden="true"></div>
+            <section class="passcode-gate" id="passcodeGate" aria-label="Passcode" hidden>
+                <form class="passcode-panel" id="passcodeForm" autocomplete="off">
+                    <h1>PWA demo</h1>
+                    <label for="passcodeInput">Passcode</label>
+                    <input id="passcodeInput" name="passcode" type="password" inputmode="numeric" autocomplete="off" autocapitalize="none" spellcheck="false">
+                    <p class="passcode-error" id="passcodeError" role="alert" aria-live="polite"></p>
+                    <button type="submit">Enter</button>
+                </form>
+            </section>
             <header class="app-header" aria-label="PWA demo">
                 <div class="app-brand" aria-label="Project title">PWA demo</div>
                 <div class="language-toggle" role="group" aria-label="Language">

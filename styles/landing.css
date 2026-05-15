@@ -37,6 +37,75 @@
     overflow-wrap: anywhere;
 }
 
+.passcode-gate {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-intro);
+    min-height: var(--viewport-height);
+    padding: calc(var(--safe-top) + var(--shell-pad-y)) calc(var(--safe-right) + var(--shell-pad-x)) calc(var(--safe-bottom) + var(--shell-pad-y)) calc(var(--safe-left) + var(--shell-pad-x));
+    display: grid;
+    place-items: center;
+    background: #0a0a0a;
+}
+
+.passcode-gate[hidden] {
+    display: none;
+}
+
+.passcode-panel {
+    width: min(100%, 360px);
+    padding: clamp(24px, 6vw, 40px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.passcode-panel h1,
+.passcode-panel label,
+.passcode-panel p {
+    margin: 0;
+}
+
+.passcode-panel h1 {
+    font-size: clamp(28px, 7vw, 40px);
+    font-weight: 600;
+}
+
+.passcode-panel label {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 14px;
+}
+
+.passcode-panel input {
+    min-height: var(--tap-size);
+    padding: 0 12px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    font: inherit;
+}
+
+.passcode-panel button {
+    min-height: var(--tap-size);
+    color: #111;
+    background: #fff;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.passcode-error {
+    min-height: 20px;
+    color: rgba(255, 210, 210, 0.92);
+    font-size: 14px;
+}
+
 .pwa-view {
     min-height: var(--viewport-height);
     width: 100%;

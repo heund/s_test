@@ -1,11 +1,8 @@
-const FALLBACK_RUNTIME_CONFIG = {
-    eventServerUrl: 'http://localhost:3000',
-    debugEventLogger: false
-};
+import { getRuntimeConfig } from '../data/runtime-config.js';
 
 export class LocalServerEventLogger {
     constructor() {
-        this.configPromise = loadRuntimeConfig();
+        this.configPromise = getRuntimeConfig();
     }
 
     log(event) {
@@ -84,35 +81,6 @@ export class LocalServerEventLogger {
         const config = await this.configPromise;
         debugEventLogger(config, message, details);
     }
-}
-
-async function loadRuntimeConfig() {
-    try {
-        const response = await fetch('./data/runtime-config.json', {
-            cache: 'no-store'
-        });
-
-        if (!response.ok) {
-            return FALLBACK_RUNTIME_CONFIG;
-        }
-
-        return normalizeRuntimeConfig(await response.json());
-    } catch {
-        return FALLBACK_RUNTIME_CONFIG;
-    }
-}
-
-function normalizeRuntimeConfig(config) {
-    if (!config || typeof config !== 'object') {
-        return FALLBACK_RUNTIME_CONFIG;
-    }
-
-    return {
-        eventServerUrl: typeof config.eventServerUrl === 'string' && config.eventServerUrl.trim()
-            ? config.eventServerUrl.trim().replace(/\/+$/, '')
-            : FALLBACK_RUNTIME_CONFIG.eventServerUrl,
-        debugEventLogger: config.debugEventLogger === true
-    };
 }
 
 function debugEventLogger(config, message, details = {}) {

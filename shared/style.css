@@ -210,6 +210,13 @@ button:focus-visible,
     visibility: visible;
 }
 
+#app.passcode-visible .app-header,
+#app.passcode-visible .app-nav-layer {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
 @supports (height: 100svh) {
     :root {
         --viewport-height: 100svh;

@@ -3,6 +3,7 @@ import { QRResolver } from './data/qr-resolver.js';
 import { DeityAssignmentResolver } from './data/deity-assignment-resolver.js';
 import { LocalContentProvider } from './data/content-provider.js';
 import { LocalServerEventLogger } from './events/event-logger.js';
+import { getRuntimeConfig } from './data/runtime-config.js';
 import { QRScanner } from './scanner/qr-scanner.js';
 import { CollectionStore } from './storage/collection-store.js';
 import { AppView } from './views/app-view.js';
@@ -26,6 +27,8 @@ export class AppController {
         this.contentProvider = new LocalContentProvider(config);
         this.collectionStore = new CollectionStore();
         this.eventLogger = new LocalServerEventLogger();
+        this.runtimeConfig = null;
+        this.isUnlocked = false;
         this.currentView = 'home';
         this.activeOverlay = null;
 
@@ -44,6 +47,10 @@ export class AppController {
             collectionGrid: document.getElementById('collectionGrid'),
             collectionEmpty: document.getElementById('collectionEmpty')
         };
+        this.elements.passcodeGate = document.getElementById('passcodeGate');
+        this.elements.passcodeForm = document.getElementById('passcodeForm');
+        this.elements.passcodeInput = document.getElementById('passcodeInput');
+        this.elements.passcodeError = document.getElementById('passcodeError');
 
         this.view = new AppView(this.elements);
         this.scanner = new QRScanner({
@@ -53,9 +60,13 @@ export class AppController {
         });
     }
 
-    init() {
+    async init() {
+        this.runtimeConfig = await getRuntimeConfig();
+        this.isUnlocked = this.isPasscodeUnlocked();
         this.applyShellClasses();
-        this.setIntroVisible(true);
+        this.setPasscodeVisible(!this.isUnlocked);
+        this.setIntroVisible(this.isUnlocked);
+        this.bindPasscodeGate();
         this.bindIntro();
         this.bindNavigation();
         this.bindSurfaceClose();
@@ -65,7 +76,11 @@ export class AppController {
         this.bindGlobals();
         this.renderCollection();
         this.setCurrentView('home');
-        this.view.showIntro();
+        if (this.isUnlocked) {
+            this.view.showIntro();
+        } else {
+            this.view.hideIntro(true);
+        }
     }
 
     applyShellClasses() {
@@ -117,9 +132,24 @@ export class AppController {
     }
 
     setIntroVisible(isVisible) {
-        document.body.classList.toggle('intro-visible', isVisible);
+        document.body.classList.toggle('intro-visible', isVisible && this.isUnlocked);
         if (this.elements.app) {
-            this.elements.app.classList.toggle('intro-visible', isVisible);
+            this.elements.app.classList.toggle('intro-visible', isVisible && this.isUnlocked);
+        }
+    }
+
+    setPasscodeVisible(isVisible) {
+        document.body.classList.toggle('passcode-visible', isVisible);
+        if (this.elements.app) {
+            this.elements.app.classList.toggle('passcode-visible', isVisible);
+        }
+
+        if (this.elements.passcodeGate) {
+            this.elements.passcodeGate.hidden = !isVisible;
+        }
+
+        if (isVisible && this.elements.passcodeInput) {
+            window.setTimeout(() => this.elements.passcodeInput.focus({ preventScroll: true }), 50);
         }
     }
 
@@ -162,6 +192,53 @@ export class AppController {
         }
     }
 
+    bindPasscodeGate() {
+        if (!this.elements.passcodeForm) return;
+
+        this.elements.passcodeForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const enteredPasscode = this.elements.passcodeInput ? this.elements.passcodeInput.value : '';
+
+            if (enteredPasscode === this.runtimeConfig.accessPasscode) {
+                this.markPasscodeUnlocked();
+                this.isUnlocked = true;
+                this.setPasscodeVisible(false);
+                this.setIntroVisible(true);
+                this.view.showIntro();
+                return;
+            }
+
+            if (this.elements.passcodeError) {
+                this.elements.passcodeError.textContent = 'Incorrect passcode.';
+            }
+
+            if (this.elements.passcodeInput) {
+                this.elements.passcodeInput.value = '';
+                this.elements.passcodeInput.focus({ preventScroll: true });
+            }
+        });
+    }
+
+    isPasscodeUnlocked() {
+        if (!this.runtimeConfig || !this.runtimeConfig.requirePasscode) {
+            return true;
+        }
+
+        try {
+            return window.sessionStorage.getItem('pwaDemoPasscodeUnlocked') === 'true';
+        } catch {
+            return false;
+        }
+    }
+
+    markPasscodeUnlocked() {
+        try {
+            window.sessionStorage.setItem('pwaDemoPasscodeUnlocked', 'true');
+        } catch {
+            // Session storage is a convenience only; current in-memory unlock still applies.
+        }
+    }
+
     bindIntro() {
         const enterHome = event => {
             if (event) {
@@ -179,6 +256,10 @@ export class AppController {
     }
 
     setCurrentView(nextView) {
+        if (!this.isUnlocked) {
+            return;
+        }
+
         if (!['home', 'map', 'camera', 'collection'].includes(nextView)) {
             return;
         }
@@ -362,7 +443,7 @@ export async function bootstrapApp() {
     try {
         const config = await loadAppConfig();
         const app = new AppController(config);
-        app.init();
+        await app.init();
         window.pwaDemoApp = app;
     } catch (error) {
         const fallbackView = new AppView({

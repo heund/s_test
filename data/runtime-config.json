@@ -1,4 +1,6 @@
 {
   "eventServerUrl": "https://server-production-930ca.up.railway.app",
-  "debugEventLogger": true
+  "debugEventLogger": true,
+  "requirePasscode": false,
+  "accessPasscode": ""
 }
