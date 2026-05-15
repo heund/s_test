@@ -251,9 +251,17 @@ export class AppController {
     async handleScan(rawValue) {
         if (!rawValue) return;
 
+        console.info('[App scan]', 'scan handler received raw QR value', {
+            rawValue
+        });
+
         const baseResolution = this.qrResolver.resolve(rawValue);
 
         if (baseResolution.status !== 'resolved') {
+            console.info('[App scan]', 'scan rejected by resolver', {
+                status: baseResolution.status,
+                rawValue: baseResolution.rawValue || rawValue
+            });
             this.scanner.markInvalid(rawValue);
             this.eventLogger.log({
                 eventType: 'qr_scan_invalid',
@@ -264,6 +272,12 @@ export class AppController {
         }
 
         const resolution = this.assignmentResolver.resolve(baseResolution);
+        console.info('[App scan]', 'scan resolved', {
+            qrId: resolution.qrCode.id,
+            locationId: resolution.location.id,
+            deityId: resolution.deity.id,
+            assignmentSource: resolution.assignmentSource || 'static'
+        });
         this.scanner.markAccepted(rawValue);
         this.scanner.pause('reveal');
 

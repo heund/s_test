@@ -15,6 +15,9 @@ const PAUSE_STATES = new Set([
     SCANNER_STATES.PAUSED_FOR_MAP
 ]);
 
+const SCANNER_DEBUG = true;
+const SCAN_HEARTBEAT_MS = 2000;
+
 export class QRScanner {
     constructor({
         videoElement,
@@ -44,10 +47,23 @@ export class QRScanner {
         this.lastAcceptedAt = 0;
         this.lastInvalidValue = null;
         this.lastInvalidAt = 0;
+        this.lastHeartbeatAt = 0;
     }
 
     async start() {
+        debugScanner('start requested', {
+            state: this.state,
+            isSecureContext: window.isSecureContext,
+            hostname: window.location.hostname,
+            hasVideoElement: Boolean(this.videoElement),
+            hasMediaDevices: Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+            hasJsQR: typeof window.jsQR !== 'undefined'
+        });
+
         if (this.state === SCANNER_STATES.ACTIVE || this.state === SCANNER_STATES.REQUESTING_PERMISSION) {
+            debugScanner('start ignored because scanner is already active or requesting permission', {
+                state: this.state
+            });
             return;
         }
 
@@ -72,6 +88,7 @@ export class QRScanner {
         }
 
         this.setState(SCANNER_STATES.REQUESTING_PERMISSION);
+        debugScanner('requesting camera permission');
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -82,17 +99,33 @@ export class QRScanner {
             });
 
             this.stream = stream;
+            debugScanner('camera stream received', {
+                videoTracks: stream.getVideoTracks().length,
+                audioTracks: stream.getAudioTracks().length
+            });
             this.videoElement.srcObject = this.stream;
             await this.videoElement.play();
             this.setState(SCANNER_STATES.ACTIVE);
+            debugScanner('video playback started', {
+                readyState: this.videoElement.readyState,
+                videoWidth: this.videoElement.videoWidth,
+                videoHeight: this.videoElement.videoHeight
+            });
             this.scheduleScan();
         } catch (error) {
+            debugScanner('camera start failed', {
+                message: error.message || 'Unknown camera error'
+            });
             this.stop();
             this.enterError(error.message || 'Camera permission was denied.');
         }
     }
 
     stop() {
+        debugScanner('stop requested', {
+            state: this.state,
+            hasStream: Boolean(this.stream)
+        });
         window.clearTimeout(this.scanTimer);
         window.clearTimeout(this.resumeTimer);
         this.scanTimer = null;
@@ -115,6 +148,10 @@ export class QRScanner {
 
     pause(reason) {
         window.clearTimeout(this.resumeTimer);
+        debugScanner('pause requested', {
+            reason,
+            state: this.state
+        });
 
         if (reason === 'inventory') {
             this.setState(SCANNER_STATES.PAUSED_FOR_INVENTORY);
@@ -128,6 +165,10 @@ export class QRScanner {
     resumeAfterCooldown() {
         window.clearTimeout(this.resumeTimer);
         this.setState(SCANNER_STATES.COOLDOWN);
+        debugScanner('resume cooldown started', {
+            resumeCooldownMs: this.resumeCooldownMs,
+            hasStream: Boolean(this.stream)
+        });
 
         if (this.lastAcceptedValue) {
             this.lastAcceptedAt = Date.now();
@@ -148,21 +189,35 @@ export class QRScanner {
     markInvalid(rawValue) {
         this.lastInvalidValue = rawValue;
         this.lastInvalidAt = Date.now();
+        debugScanner('marked invalid QR value', {
+            rawValue
+        });
     }
 
     markAccepted(rawValue) {
         this.lastAcceptedValue = rawValue;
         this.lastAcceptedAt = Date.now();
+        debugScanner('marked accepted QR value', {
+            rawValue
+        });
     }
 
     canProcess(rawValue) {
         const now = Date.now();
 
         if (rawValue === this.lastAcceptedValue && now - this.lastAcceptedAt < this.duplicateCooldownMs) {
+            debugScanner('duplicate accepted QR suppressed by cooldown', {
+                rawValue,
+                remainingMs: this.duplicateCooldownMs - (now - this.lastAcceptedAt)
+            });
             return false;
         }
 
         if (rawValue === this.lastInvalidValue && now - this.lastInvalidAt < this.invalidCooldownMs) {
+            debugScanner('duplicate invalid QR suppressed by cooldown', {
+                rawValue,
+                remainingMs: this.invalidCooldownMs - (now - this.lastInvalidAt)
+            });
             return false;
         }
 
@@ -187,6 +242,11 @@ export class QRScanner {
         }
 
         if (this.videoElement.readyState === this.videoElement.HAVE_ENOUGH_DATA) {
+            this.logHeartbeat('scanning frame', {
+                readyState: this.videoElement.readyState,
+                videoWidth: this.videoElement.videoWidth,
+                videoHeight: this.videoElement.videoHeight
+            });
             this.canvas.height = this.videoElement.videoHeight;
             this.canvas.width = this.videoElement.videoWidth;
             this.context.drawImage(this.videoElement, 0, 0, this.canvas.width, this.canvas.height);
@@ -198,14 +258,25 @@ export class QRScanner {
 
             const rawValue = code && code.data ? code.data.trim() : '';
             if (rawValue && this.canProcess(rawValue)) {
+                debugScanner('QR value detected', {
+                    rawValue
+                });
                 this.onScan(rawValue);
             }
+        } else {
+            this.logHeartbeat('video not ready for scanning', {
+                readyState: this.videoElement.readyState,
+                requiredReadyState: this.videoElement.HAVE_ENOUGH_DATA
+            });
         }
 
         this.scheduleScan();
     }
 
     enterError(message) {
+        debugScanner('entering scanner error state', {
+            message
+        });
         if (this.stream) {
             this.stop();
         }
@@ -216,6 +287,30 @@ export class QRScanner {
     }
 
     setState(nextState) {
+        if (this.state !== nextState) {
+            debugScanner('state changed', {
+                from: this.state,
+                to: nextState
+            });
+        }
         this.state = nextState;
     }
+
+    logHeartbeat(message, details = {}) {
+        const now = Date.now();
+        if (now - this.lastHeartbeatAt < SCAN_HEARTBEAT_MS) {
+            return;
+        }
+
+        this.lastHeartbeatAt = now;
+        debugScanner(message, details);
+    }
+}
+
+function debugScanner(message, details = {}) {
+    if (!SCANNER_DEBUG) {
+        return;
+    }
+
+    console.info('[QR scanner]', message, details);
 }
