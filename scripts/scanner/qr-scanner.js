@@ -92,17 +92,13 @@ export class QRScanner {
         debugScanner('requesting camera permission');
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: { ideal: 'environment' }
-                },
-                audio: false
-            });
+            const stream = await this.requestCameraStream();
 
             this.stream = stream;
             debugScanner('camera stream received', {
                 videoTracks: stream.getVideoTracks().length,
-                audioTracks: stream.getAudioTracks().length
+                audioTracks: stream.getAudioTracks().length,
+                videoSettings: stream.getVideoTracks()[0] ? stream.getVideoTracks()[0].getSettings() : null
             });
             this.videoElement.srcObject = this.stream;
             await this.videoElement.play();
@@ -145,6 +141,38 @@ export class QRScanner {
         }
 
         this.setState(SCANNER_STATES.IDLE);
+    }
+
+    async requestCameraStream() {
+        const preferredConstraints = {
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 },
+                advanced: [
+                    { focusMode: 'continuous' },
+                    { exposureMode: 'continuous' },
+                    { whiteBalanceMode: 'continuous' }
+                ]
+            },
+            audio: false
+        };
+
+        try {
+            return await navigator.mediaDevices.getUserMedia(preferredConstraints);
+        } catch (error) {
+            debugScanner('preferred camera constraints failed, retrying with basic environment camera', {
+                message: error.message || 'Unknown constraint error'
+            });
+
+            return navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { ideal: 'environment' }
+                },
+                audio: false
+            });
+        }
     }
 
     pause(reason) {
