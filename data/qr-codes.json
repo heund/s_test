@@ -1,0 +1,14 @@
+[
+  {
+    "id": "qr-jejushin-12345",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin12345",
+    "locationId": "loc-001",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-67891",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin67891",
+    "locationId": "loc-002",
+    "active": true
+  }
+]

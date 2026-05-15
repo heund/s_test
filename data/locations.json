@@ -1,0 +1,12 @@
+[
+  {
+    "id": "loc-001",
+    "label": "Location 1",
+    "active": true
+  },
+  {
+    "id": "loc-002",
+    "label": "Location 2",
+    "active": true
+  }
+]

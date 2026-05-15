@@ -1,0 +1,20 @@
+[
+  {
+    "id": "reveal-grandma-default-ko",
+    "deityId": "grandma",
+    "locale": "ko-KR",
+    "title": "설문대할망",
+    "body": "설명하는 내용은 여기에 들어갈 예정입니다\n샘플 텍스트",
+    "source": "local",
+    "version": 1
+  },
+  {
+    "id": "reveal-hanra-default-ko",
+    "deityId": "hanra",
+    "locale": "ko-KR",
+    "title": "산신",
+    "body": "산신\n설명하는 내용은 여기에 들어갈 예정입니다\n샘플 텍스트",
+    "source": "local",
+    "version": 1
+  }
+]

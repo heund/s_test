@@ -1,0 +1,4 @@
+{
+  "eventServerUrl": "http://localhost:3000",
+  "debugEventLogger": false
+}

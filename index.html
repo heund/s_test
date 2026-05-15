@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PWA demo">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="./manifest.json">
+    <title>PWA demo</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./shared/style.css">
+    <link rel="stylesheet" href="./styles/landing.css">
+</head>
+<body>
+    <div id="app">
+        <div class="app-shell">
+            <div class="app-background" aria-hidden="true"></div>
+            <header class="app-header" aria-label="PWA demo">
+                <div class="app-brand" aria-label="Project title">PWA demo</div>
+                <div class="language-toggle" role="group" aria-label="Language">
+                    <button class="language-toggle-option is-active" type="button" data-language="ko" aria-pressed="true" aria-disabled="true">한국어</button>
+                    <button class="language-toggle-option" type="button" data-language="en" aria-pressed="false" aria-disabled="true">EN</button>
+                </div>
+            </header>
+            <main class="app-main">
+                <section class="app-view" id="appView">
+                    <div id="landingAnimation">
+                        <div id="landingBackground"></div>
+                        <div id="landingLogo">
+                            <h1>PWA demo</h1>
+                        </div>
+                    </div>
+
+                    <section class="pwa-view home-view is-active" id="homeView" data-view="home" aria-label="Home">
+                        <div class="view-panel">
+                            <h1>PWA demo</h1>
+                            <p>QR deity collection bare mechanics build.</p>
+                            <p>Choose Map, Camera, or Collection.</p>
+                        </div>
+                    </section>
+
+                    <section class="pwa-view map-view" id="mapView" data-view="map" aria-label="Map" hidden>
+                        <div class="view-panel focused-panel">
+                            <div class="surface-header">
+                                <h2>Map</h2>
+                                <button class="surface-close-button" type="button" data-close-surface aria-label="Return to main page">×</button>
+                            </div>
+                            <div class="surface-body">
+                                <p>Map image removed in bare mechanics build.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="pwa-view camera-view" id="cameraView" data-view="camera" aria-label="Camera" hidden>
+                        <div class="qr-scanner-container" id="qrScanner">
+                            <video id="qrVideo" width="100%" height="100%" autoplay muted playsinline></video>
+                            <div class="qr-scanner-overlay">
+                                <div class="qr-rotating-circles">
+                                    <div class="qr-circle qr-circle-1"></div>
+                                    <div class="qr-circle qr-circle-2"></div>
+                                </div>
+                            </div>
+                            <div class="qr-scanner-text">QR코드를 스캔해주세요</div>
+                        </div>
+                    </section>
+
+                    <section class="pwa-view collection-view" id="collectionView" data-view="collection" aria-label="Collection" hidden>
+                        <div class="view-panel focused-panel collection-panel">
+                            <div class="surface-header">
+                                <h2>Collection</h2>
+                                <button class="surface-close-button" type="button" data-close-surface aria-label="Return to main page">×</button>
+                            </div>
+                            <div class="surface-body collection-body">
+                                <button class="clear-cache-btn" id="clearCollectionButton" type="button">Clear Cache</button>
+                                <div class="collection-grid" id="collectionGrid">
+                                    <div class="collection-empty" id="collectionEmpty">
+                                        <p>No items collected yet</p>
+                                        <p>Scan QR codes to collect deities</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+            </main>
+            <nav class="app-nav-layer" id="appNavLayer" aria-label="Primary navigation">
+                <div class="bottom-nav">
+                    <button class="bottom-nav-item" id="mapNavButton" type="button" data-view-target="map" aria-label="Map">Map</button>
+                    <button class="bottom-nav-item bottom-nav-camera" id="cameraNavButton" type="button" data-view-target="camera" aria-label="Camera">Camera</button>
+                    <button class="bottom-nav-item" id="collectionNavButton" type="button" data-view-target="collection" aria-label="Collection">Collection</button>
+                </div>
+            </nav>
+            <div class="app-overlay-layer" id="appOverlayLayer"></div>
+            <div class="app-toast-layer" id="appToastLayer" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <div id="loadingScreen" class="glassmorphism-loading">
+        <div class="loading-spinner"></div>
+    </div>
+    <script type="module" src="./scripts/landing.js"></script>
+</body>
+</html>

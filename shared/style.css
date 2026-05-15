@@ -1,0 +1,223 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+
+    --shell-pad-x: clamp(16px, 4vw, 32px);
+    --shell-pad-y: clamp(16px, 3dvh, 28px);
+    --shell-max-width: 1120px;
+    --panel-max-width: 640px;
+    --overlay-margin: clamp(12px, 3vw, 28px);
+    --tap-size: 44px;
+    --bottom-nav-space: calc(var(--tap-size) + 24px);
+
+    --z-camera: 1000;
+    --z-shell: 3000;
+    --z-nav: 3100;
+    --z-modal: 6000;
+    --z-toast: 7000;
+    --z-intro: 10000;
+
+    --viewport-height: 100vh;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+html {
+    width: 100%;
+    min-height: 100%;
+    background: #000;
+    overflow-x: hidden;
+}
+
+body {
+    width: 100%;
+    min-width: 320px;
+    min-height: 100vh;
+    min-height: var(--viewport-height);
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Noto Sans KR', sans-serif;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+body.overlay-open {
+    overflow: hidden;
+}
+
+button {
+    min-width: var(--tap-size);
+    min-height: var(--tap-size);
+    font: inherit;
+}
+
+button:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 3px;
+}
+
+#app {
+    position: relative;
+    min-height: 100vh;
+    min-height: var(--viewport-height);
+    overflow-x: hidden;
+}
+
+.app-shell {
+    position: relative;
+    min-height: 100vh;
+    min-height: var(--viewport-height);
+    isolation: isolate;
+    overflow-x: hidden;
+}
+
+.app-background {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: #0a0a0a;
+}
+
+.app-header {
+    position: fixed;
+    inset: calc(var(--safe-top) + var(--shell-pad-y)) calc(var(--safe-right) + var(--shell-pad-x)) auto calc(var(--safe-left) + var(--shell-pad-x));
+    z-index: var(--z-shell);
+    min-height: var(--tap-size);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.app-brand {
+    grid-column: 1;
+    min-width: 0;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: auto;
+}
+
+.language-toggle {
+    grid-column: 3;
+    justify-self: end;
+    min-height: var(--tap-size);
+    display: inline-grid;
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    pointer-events: auto;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.language-toggle-option {
+    min-width: 44px;
+    min-height: 36px;
+    padding: 0 10px;
+    color: rgba(255, 255, 255, 0.78);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.language-toggle-option[aria-disabled="true"] {
+    cursor: default;
+}
+
+.language-toggle-option.is-active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.app-main {
+    position: relative;
+    min-height: 100vh;
+    min-height: var(--viewport-height);
+    width: 100%;
+    display: grid;
+    place-items: stretch;
+}
+
+.app-view {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    min-height: var(--viewport-height);
+    overflow: visible;
+}
+
+.app-nav-layer,
+.app-overlay-layer,
+.app-toast-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+.app-nav-layer {
+    z-index: var(--z-nav);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.app-overlay-layer {
+    z-index: var(--z-modal);
+}
+
+.app-toast-layer {
+    z-index: var(--z-toast);
+    padding: calc(var(--safe-top) + var(--shell-pad-y)) calc(var(--safe-right) + var(--shell-pad-x)) calc(var(--safe-bottom) + var(--shell-pad-y)) calc(var(--safe-left) + var(--shell-pad-x));
+}
+
+#app.view-home:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-header,
+#app.view-home:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-nav-layer,
+#app.view-camera:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-nav-layer {
+    opacity: 1;
+    visibility: visible;
+}
+
+@supports (height: 100svh) {
+    :root {
+        --viewport-height: 100svh;
+    }
+}
+
+@supports (height: 100dvh) {
+    :root {
+        --viewport-height: 100dvh;
+    }
+}

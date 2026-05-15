@@ -1,0 +1,12 @@
+[
+  {
+    "qrId": "qr-jejushin-12345",
+    "locationId": "loc-001",
+    "deityId": "grandma"
+  },
+  {
+    "qrId": "qr-jejushin-67891",
+    "locationId": "loc-002",
+    "deityId": "hanra"
+  }
+]

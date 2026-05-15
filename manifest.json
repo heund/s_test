@@ -1,0 +1,20 @@
+{
+  "name": "PWA demo",
+  "short_name": "PWA demo",
+  "description": "Stripped bare-mechanics QR deity collection PWA.",
+  "id": "/",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "any",
+  "scope": "./",
+  "lang": "ko-KR",
+  "dir": "ltr",
+  "categories": ["art", "utilities"],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}
