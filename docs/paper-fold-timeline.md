@@ -21,11 +21,13 @@ The timing source lives in `scripts/views/app-view.js`:
 ```js
 const PAPER_FOLD_TIMELINE = {
     totalDurationMs: 8400,
-    closeEnd: 0.42,
+    closeEnd: 0.36,
     openStart: 0.54,
+    openEnd: 0.68,
+    openCascadeGapMs: 80,
     offsetHoldWithinClose: 0.24,
     offsetSettleWithinClose: 0.55,
-    offsetReturn: 0.70
+    offsetReturn: 0.56
 };
 ```
 
@@ -42,7 +44,7 @@ The point in the total animation where the main paper triangles finish closing i
 Example:
 
 ```text
-0.42 = 42%
+0.36 = 36%
 ```
 
 `openStart`
@@ -53,6 +55,30 @@ Example:
 
 ```text
 0.54 = 54%
+```
+
+`openEnd`
+
+The point in the total animation where the triangles finish opening and are fully outside the screen again.
+
+Example:
+
+```text
+0.68 = 68%
+```
+
+Keeping `openStart` fixed and moving `openEnd` earlier makes only the opening movement faster. It does not lengthen the closed hold or change the closing movement.
+
+`openCascadeGapMs`
+
+The target delay between each panel beginning its opening motion, in milliseconds.
+
+The close sequence still uses the CSS panel delays. The opening sequence is calculated separately so it can cascade more tightly without stretching the hold or changing the close timing.
+
+Example:
+
+```text
+80 = each following panel starts opening about 80ms after the previous one
 ```
 
 `offsetHoldWithinClose`
@@ -86,10 +112,10 @@ The point in the total animation where the duplicate/shadow offset returns to it
 Example:
 
 ```text
-0.70 = 70%
+0.56 = 56%
 ```
 
-So the duplicate returns to `translate(3px, 3px)` at `70%` of the total timeline.
+So the duplicate returns to `translate(3px, 3px)` at `56%` of the total timeline.
 
 ## Duplicate Opacity
 
@@ -100,9 +126,9 @@ They are only meant to be visible while offset from the main triangle. When a du
 Current behavior:
 
 - duplicate is fully visible while offset
-- duplicate offset settles to `translate(0, 0)` around `23%`
+- duplicate offset settles to `translate(0, 0)` around `19.8%`
 - duplicate remains visible briefly after settling
-- duplicate fades out over a short window around `24.4%` to `25.6%`
+- duplicate fades out over a short window around `20.9%` to `22%`
 - duplicate stays hidden through the closed hold
 - duplicate fades back in during opening, reaching full opacity by `offsetReturn`
 

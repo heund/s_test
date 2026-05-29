@@ -1,14 +1,28 @@
 const PAPER_FOLD_TIMELINE = {
     totalDurationMs: 8400,
-    closeEnd: 0.42,
+    closeEnd: 0.36,
     openStart: 0.54,
+    openEnd: 0.68,
+    openCascadeGapMs: 80,
     offsetHoldWithinClose: 0.24,
     offsetSettleWithinClose: 0.55,
-    offsetReturn: 0.70
+    offsetReturn: 0.56
 };
 
 function toPercent(value) {
     return `${(value * 100).toFixed(3).replace(/\.?0+$/, '')}%`;
+}
+
+function shiftedOpenPhase(panelDelayMs, sequenceIndex) {
+    const desiredOpenStartMs = (PAPER_FOLD_TIMELINE.openStart * PAPER_FOLD_TIMELINE.totalDurationMs)
+        + (PAPER_FOLD_TIMELINE.openCascadeGapMs * sequenceIndex);
+    const desiredOpenEndMs = (PAPER_FOLD_TIMELINE.openEnd * PAPER_FOLD_TIMELINE.totalDurationMs)
+        + (PAPER_FOLD_TIMELINE.openCascadeGapMs * sequenceIndex);
+
+    return {
+        start: toPercent((desiredOpenStartMs - panelDelayMs) / PAPER_FOLD_TIMELINE.totalDurationMs),
+        end: toPercent((desiredOpenEndMs - panelDelayMs) / PAPER_FOLD_TIMELINE.totalDurationMs)
+    };
 }
 
 export class AppView {
@@ -36,6 +50,11 @@ export class AppView {
         const offsetReturn = toPercent(PAPER_FOLD_TIMELINE.offsetReturn);
         const opacityFadeStart = toPercent(PAPER_FOLD_TIMELINE.closeEnd * 0.58);
         const opacityHide = toPercent(PAPER_FOLD_TIMELINE.closeEnd * 0.61);
+        const outlineFadeStart = toPercent(PAPER_FOLD_TIMELINE.closeEnd - 0.015);
+        const rightOpen = shiftedOpenPhase(0, 0);
+        const leftOpen = shiftedOpenPhase(220, 1);
+        const topOpen = shiftedOpenPhase(440, 2);
+        const bottomOpen = shiftedOpenPhase(660, 3);
 
         paperFoldOverlay.style.setProperty('--fold-total-duration', `${PAPER_FOLD_TIMELINE.totalDurationMs}ms`);
 
@@ -50,73 +69,79 @@ export class AppView {
 @keyframes paper-fold-right {
     0% { opacity: 0; transform: translate3d(calc(100vw + var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(-62deg) rotateZ(0.7deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    ${closeEnd}, ${openStart} { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
-    100% { opacity: 1; transform: translate3d(calc(100vw + var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(56deg) rotateZ(-0.4deg); }
+    ${closeEnd}, ${rightOpen.start} { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    ${rightOpen.end}, 100% { opacity: 1; transform: translate3d(calc(100vw + var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(56deg) rotateZ(-0.4deg); }
 }
 
 @keyframes paper-fold-left {
     0% { opacity: 0; transform: translate3d(calc(-100vw - var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(62deg) rotateZ(-0.8deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    ${closeEnd}, ${openStart} { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
-    100% { opacity: 1; transform: translate3d(calc(-100vw - var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(-56deg) rotateZ(0.5deg); }
+    ${closeEnd}, ${leftOpen.start} { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    ${leftOpen.end}, 100% { opacity: 1; transform: translate3d(calc(-100vw - var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(-56deg) rotateZ(0.5deg); }
 }
 
 @keyframes paper-fold-top {
     0% { opacity: 0; transform: translate3d(0, calc(-100vh - var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(-64deg) rotateZ(0.5deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    ${closeEnd}, ${openStart} { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
-    100% { opacity: 1; transform: translate3d(0, calc(-100vh - var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(58deg) rotateZ(-0.3deg); }
+    ${closeEnd}, ${topOpen.start} { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    ${topOpen.end}, 100% { opacity: 1; transform: translate3d(0, calc(-100vh - var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(58deg) rotateZ(-0.3deg); }
 }
 
 @keyframes paper-fold-bottom {
     0% { opacity: 0; transform: translate3d(0, calc(100vh + var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(64deg) rotateZ(-0.5deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    ${closeEnd}, ${openStart} { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
-    100% { opacity: 1; transform: translate3d(0, calc(100vh + var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(-58deg) rotateZ(0.3deg); }
+    ${closeEnd}, ${bottomOpen.start} { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    ${bottomOpen.end}, 100% { opacity: 1; transform: translate3d(0, calc(100vh + var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(-58deg) rotateZ(0.3deg); }
 }
 
 @keyframes paper-fold-left-duplicate-offset {
-    0%, ${offsetHold} { opacity: 1; transform: translate(3px, 3px); }
-    ${offsetSettle}, ${opacityFadeStart} { opacity: 1; transform: translate(0, 0); }
+    0%, ${offsetHold} { opacity: 0.6; transform: translate(3px, 3px); }
+    ${offsetSettle}, ${opacityFadeStart} { opacity: 0.6; transform: translate(0, 0); }
     ${opacityHide} { opacity: 0; transform: translate(0, 0); }
-    ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
-    ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, 3px); }
+    ${closeEnd}, ${leftOpen.start} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 0.6; transform: translate(3px, 3px); }
 }
 
 @keyframes paper-fold-right-duplicate-offset {
-    0%, ${offsetHold} { opacity: 1; transform: translate(-3px, 3px); }
-    ${offsetSettle}, ${opacityFadeStart} { opacity: 1; transform: translate(0, 0); }
+    0%, ${offsetHold} { opacity: 0.6; transform: translate(-3px, 3px); }
+    ${offsetSettle}, ${opacityFadeStart} { opacity: 0.6; transform: translate(0, 0); }
     ${opacityHide} { opacity: 0; transform: translate(0, 0); }
-    ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
-    ${offsetReturn}, 100% { opacity: 1; transform: translate(-3px, 3px); }
+    ${closeEnd}, ${rightOpen.start} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 0.6; transform: translate(-3px, 3px); }
 }
 
 @keyframes paper-fold-top-duplicate-offset {
-    0%, ${offsetHold} { opacity: 1; transform: translate(3px, 3px); }
-    ${offsetSettle}, ${opacityFadeStart} { opacity: 1; transform: translate(0, 0); }
+    0%, ${offsetHold} { opacity: 0.6; transform: translate(3px, 3px); }
+    ${offsetSettle}, ${opacityFadeStart} { opacity: 0.6; transform: translate(0, 0); }
     ${opacityHide} { opacity: 0; transform: translate(0, 0); }
-    ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
-    ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, 3px); }
+    ${closeEnd}, ${topOpen.start} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 0.6; transform: translate(3px, 3px); }
 }
 
 @keyframes paper-fold-top-duplicate-extension {
-    0%, ${offsetHold} { opacity: 1; transform: translate(3px, 3px); }
-    ${offsetSettle}, ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
-    ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, 3px); }
+    0%, ${offsetHold} { opacity: 0.6; transform: translate(3px, 3px); }
+    ${offsetSettle}, ${closeEnd}, ${topOpen.start} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 0.6; transform: translate(3px, 3px); }
 }
 
 @keyframes paper-fold-bottom-duplicate-offset {
-    0%, ${offsetHold} { opacity: 1; transform: translate(3px, -3px); }
-    ${offsetSettle}, ${opacityFadeStart} { opacity: 1; transform: translate(0, 0); }
+    0%, ${offsetHold} { opacity: 0.6; transform: translate(3px, -3px); }
+    ${offsetSettle}, ${opacityFadeStart} { opacity: 0.6; transform: translate(0, 0); }
     ${opacityHide} { opacity: 0; transform: translate(0, 0); }
-    ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
-    ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, -3px); }
+    ${closeEnd}, ${bottomOpen.start} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 0.6; transform: translate(3px, -3px); }
 }
 
 @keyframes paper-fold-bottom-duplicate-extension {
-    0%, ${offsetHold} { opacity: 1; transform: translate(3px, -3px); }
-    ${offsetSettle}, ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
-    ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, -3px); }
+    0%, ${offsetHold} { opacity: 0.6; transform: translate(3px, -3px); }
+    ${offsetSettle}, ${closeEnd}, ${bottomOpen.start} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 0.6; transform: translate(3px, -3px); }
+}
+
+@keyframes paper-fold-outline-opacity {
+    0%, ${outlineFadeStart} { opacity: 0.55; }
+    ${closeEnd}, ${openStart} { opacity: 0; }
+    ${offsetReturn}, 100% { opacity: 0.55; }
 }
 `;
     }
@@ -154,11 +179,28 @@ export class AppView {
         }, 600);
     }
 
-    triggerPaperFoldReveal() {
+    renderPaperFoldResult(result = {}) {
+        const { paperFoldRevealTarget } = this.elements;
+        if (!paperFoldRevealTarget) return;
+
+        paperFoldRevealTarget.replaceChildren();
+        if (!result?.deityImageSrc) return;
+
+        const deityImage = document.createElement('img');
+        deityImage.className = 'paper-fold-result-deity';
+        deityImage.src = result.deityImageSrc;
+        deityImage.alt = result.deityImageAlt || '';
+        deityImage.decoding = 'async';
+        deityImage.loading = 'eager';
+        paperFoldRevealTarget.appendChild(deityImage);
+    }
+
+    triggerPaperFoldReveal(result = {}) {
         const { paperFoldOverlay, paperFoldRevealTarget, qrScanner } = this.elements;
         if (!paperFoldOverlay || !paperFoldRevealTarget) return Promise.resolve(false);
 
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.renderPaperFoldResult(result);
         paperFoldOverlay.hidden = false;
         paperFoldOverlay.classList.remove('is-folding');
         paperFoldRevealTarget.classList.remove('is-visible');
@@ -182,7 +224,24 @@ export class AppView {
                 paperFoldOverlay.classList.add('is-folding');
             });
 
+            const revealTimer = window.setTimeout(() => {
+                paperFoldRevealTarget.classList.add('is-visible');
+                paperFoldRevealTarget.setAttribute('aria-hidden', 'false');
+                if (qrScanner) {
+                    qrScanner.classList.add('is-paper-reveal-visible');
+                }
+            }, 4300);
+
+            const cleanupTimer = window.setTimeout(() => {
+                window.clearTimeout(revealTimer);
+                paperFoldOverlay.classList.remove('is-folding');
+                paperFoldOverlay.hidden = true;
+                resolve(true);
+            }, 8400);
+
             paperFoldOverlay.addEventListener('animationcancel', () => {
+                window.clearTimeout(revealTimer);
+                window.clearTimeout(cleanupTimer);
                 paperFoldOverlay.classList.remove('is-folding');
                 paperFoldOverlay.hidden = true;
                 resolve(false);
@@ -196,6 +255,7 @@ export class AppView {
         if (paperFoldRevealTarget) {
             paperFoldRevealTarget.classList.remove('is-visible');
             paperFoldRevealTarget.setAttribute('aria-hidden', 'true');
+            paperFoldRevealTarget.replaceChildren();
         }
 
         if (qrScanner) {

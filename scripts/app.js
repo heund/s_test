@@ -337,6 +337,29 @@ export class AppController {
         window.triggerPaperFoldReveal = () => this.view.triggerPaperFoldReveal();
     }
 
+    getPaperFoldRevealPayload(resolution) {
+        const deityRevealAssets = {
+            'qr-001': {
+                deityImageSrc: './styles/assets/deity/GANGNIM.svg',
+                deityImageAlt: 'Gangnim deity'
+            },
+            'qr-jejushin-12345': {
+                deityImageSrc: './styles/assets/deity/GANGNIM.svg',
+                deityImageAlt: 'Gangnim deity'
+            },
+            'qr-002': {
+                deityImageSrc: './styles/assets/deity/CHOGONGSHIN.svg',
+                deityImageAlt: 'Chogongshin deity'
+            },
+            'qr-jejushin-67891': {
+                deityImageSrc: './styles/assets/deity/CHOGONGSHIN.svg',
+                deityImageAlt: 'Chogongshin deity'
+            }
+        };
+
+        return deityRevealAssets[resolution.qrCode.id] || null;
+    }
+
     async handleScan(rawValue) {
         if (!rawValue) return;
 
@@ -410,7 +433,11 @@ export class AppController {
             // visual event over the nav.
             // Temporary camera animation test: bypass the deity reveal popup so
             // the paper-fold overlay can be evaluated without the modal layer.
-            this.view.triggerPaperFoldReveal();
+            this.view.triggerPaperFoldReveal(this.getPaperFoldRevealPayload(resolution)).finally(() => {
+                if (this.currentView === 'camera') {
+                    this.setCurrentView('result');
+                }
+            });
         } catch {
             this.setActiveOverlay(null);
             if (this.currentView === 'camera') {
