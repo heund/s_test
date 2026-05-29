@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Triangle Shape Test</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: grid;
+            place-items: center;
+            background: #f2eee6;
+        }
+
+        .triangle-test {
+            position: relative;
+            width: min(72vw, 420px);
+            aspect-ratio: 1;
+            animation: slide-x 2400ms ease-in-out infinite alternate;
+        }
+
+        .triangle-stage {
+            position: relative;
+            width: min(72vw, 420px);
+            aspect-ratio: 1;
+        }
+
+        .triangle-test svg {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: visible;
+        }
+
+        .triangle-test svg:nth-child(2) {
+            z-index: 1;
+            animation: relative-offset 2400ms ease-in-out infinite alternate;
+        }
+
+        .triangle-test polygon {
+            fill: #ff2bd6;
+        }
+
+        .triangle-test svg:nth-child(2) polygon {
+            fill: #00b7ff;
+        }
+
+        .right-triangle-group {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            animation: slide-x-reverse 2400ms ease-in-out infinite alternate;
+        }
+
+        .static-triangle {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: visible;
+        }
+
+        .static-triangle polygon {
+            fill: #ffe600;
+        }
+
+        .static-triangle-shadow {
+            z-index: -1;
+            animation: right-relative-offset 2400ms ease-in-out infinite alternate;
+        }
+
+        .static-triangle-shadow polygon {
+            fill: #ff7a00;
+        }
+
+        .top-triangle-group {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            animation: slide-y-top 2400ms ease-in-out infinite alternate;
+        }
+
+        .static-triangle-top {
+            transform: translate(80px, 0);
+        }
+
+        .static-triangle-top polygon {
+            fill: #20e070;
+        }
+
+        .top-shadow-group {
+            position: absolute;
+            inset: 0;
+            z-index: -10;
+            transform: translate(108px, 28px);
+            animation: slide-y-top-shadow 2400ms ease-in-out infinite alternate;
+        }
+
+        .top-shadow-group .static-triangle {
+            z-index: 0;
+        }
+
+        .top-triangle-group > .static-triangle-top {
+            z-index: 2;
+        }
+
+        .static-triangle-top-shadow {
+            transform: none;
+        }
+
+        .static-triangle-top-shadow polygon {
+            fill: #7f3cff;
+        }
+
+        .static-triangle-top-extension {
+            z-index: -2;
+            transform: none;
+        }
+
+        .static-triangle-top-extension polygon {
+            fill: #ff4f8f;
+        }
+
+        .bottom-triangle-group {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            animation: slide-y-bottom 2400ms ease-in-out infinite alternate;
+        }
+
+        .static-triangle-bottom {
+            transform: translate(80px, 0);
+        }
+
+        .static-triangle-bottom polygon {
+            fill: #10c7a7;
+        }
+
+        .bottom-shadow-group {
+            position: absolute;
+            inset: 0;
+            z-index: -11;
+            transform: translate(108px, -28px);
+            animation: slide-y-bottom-shadow 2400ms ease-in-out infinite alternate;
+        }
+
+        .bottom-shadow-group .static-triangle {
+            z-index: 0;
+        }
+
+        .static-triangle-bottom-shadow {
+            transform: none;
+        }
+
+        .static-triangle-bottom-shadow polygon {
+            fill: #5b52ff;
+        }
+
+        .static-triangle-bottom-extension {
+            z-index: -2;
+            transform: none;
+        }
+
+        .static-triangle-bottom-extension polygon {
+            fill: #ff8a3d;
+        }
+
+        @keyframes slide-x {
+            from {
+                transform: translateX(-80px);
+            }
+
+            to {
+                transform: translateX(80px);
+            }
+        }
+
+        @keyframes slide-x-reverse {
+            from {
+                transform: translateX(240px);
+            }
+
+            to {
+                transform: translateX(80px);
+            }
+        }
+
+        @keyframes slide-y-top {
+            from {
+                transform: translateY(-80px);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slide-y-top-shadow {
+            from {
+                transform: translate(108px, -52px);
+            }
+
+            to {
+                transform: translate(80px, 0);
+            }
+        }
+
+        @keyframes slide-y-bottom {
+            from {
+                transform: translateY(80px);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slide-y-bottom-shadow {
+            from {
+                transform: translate(108px, 52px);
+            }
+
+            to {
+                transform: translate(80px, 0);
+            }
+        }
+
+        @keyframes relative-offset {
+            from {
+                transform: translate(28px, 28px);
+            }
+
+            to {
+                transform: translate(0, 0);
+            }
+        }
+
+        @keyframes right-relative-offset {
+            from {
+                transform: translate(-28px, 28px);
+            }
+
+            to {
+                transform: translate(0, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="triangle-stage">
+        <div class="top-shadow-group">
+            <svg class="static-triangle static-triangle-top-extension" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="-44,-58 144,-58 112,-12 -12,-12"></polygon>
+            </svg>
+            <svg class="static-triangle static-triangle-top-shadow" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="-12,-12 50,50 112,-12"></polygon>
+            </svg>
+        </div>
+        <div class="bottom-shadow-group">
+            <svg class="static-triangle static-triangle-bottom-extension" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="-44,158 144,158 112,112 -12,112"></polygon>
+            </svg>
+            <svg class="static-triangle static-triangle-bottom-shadow" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="-12,112 50,50 112,112"></polygon>
+            </svg>
+        </div>
+        <div class="right-triangle-group">
+            <svg class="static-triangle static-triangle-shadow" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="112,-12 50,50 112,112"></polygon>
+            </svg>
+            <svg class="static-triangle" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="112,-12 50,50 112,112"></polygon>
+            </svg>
+        </div>
+        <div class="top-triangle-group">
+            <svg class="static-triangle static-triangle-top" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="-12,-12 50,50 112,-12"></polygon>
+            </svg>
+        </div>
+        <div class="bottom-triangle-group">
+            <svg class="static-triangle static-triangle-bottom" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="-12,112 50,50 112,112"></polygon>
+            </svg>
+        </div>
+        <div class="triangle-test" aria-label="Centered SVG polygon triangle test">
+            <svg viewBox="-12 -12 124 124" preserveAspectRatio="none" role="img">
+                <polygon points="-12,-12 50,50 -12,112"></polygon>
+            </svg>
+            <svg viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points="-12,-12 50,50 -12,112"></polygon>
+            </svg>
+        </div>
+    </div>
+</body>
+</html>

@@ -45,7 +45,10 @@ export class AppController {
             surfaceCloseButtons: Array.from(document.querySelectorAll('[data-close-surface]')),
             qrVideo: document.getElementById('qrVideo'),
             collectionGrid: document.getElementById('collectionGrid'),
-            collectionEmpty: document.getElementById('collectionEmpty')
+            collectionEmpty: document.getElementById('collectionEmpty'),
+            qrScanner: document.getElementById('qrScanner'),
+            paperFoldOverlay: document.getElementById('paperFoldOverlay'),
+            paperFoldRevealTarget: document.getElementById('paperFoldRevealTarget')
         };
         this.elements.passcodeGate = document.getElementById('passcodeGate');
         this.elements.passcodeForm = document.getElementById('passcodeForm');
@@ -159,7 +162,7 @@ export class AppController {
     }
 
     updateAppStateClasses() {
-        const viewClasses = ['view-home', 'view-camera', 'view-map', 'view-collection'];
+        const viewClasses = ['view-home', 'view-camera', 'view-map', 'view-collection', 'view-result'];
         const overlayClasses = ['overlay-reveal', 'overlay-camera-error'];
         const targets = [document.body, this.elements.app].filter(Boolean);
 
@@ -260,7 +263,7 @@ export class AppController {
             return;
         }
 
-        if (!['home', 'map', 'camera', 'collection'].includes(nextView)) {
+        if (!['home', 'map', 'camera', 'collection', 'result'].includes(nextView)) {
             return;
         }
 
@@ -269,6 +272,10 @@ export class AppController {
 
         if (previousView === 'camera' && nextView !== 'camera') {
             this.scanner.stop();
+        }
+
+        if (previousView === 'result' && nextView !== 'result') {
+            this.view.hidePaperFoldResult();
         }
 
         if (nextView === 'collection') {
@@ -327,6 +334,7 @@ export class AppController {
 
     bindGlobals() {
         window.clearCollectionCache = () => this.clearCollectionCache();
+        window.triggerPaperFoldReveal = () => this.view.triggerPaperFoldReveal();
     }
 
     async handleScan(rawValue) {
@@ -397,16 +405,12 @@ export class AppController {
             }
 
             this.renderCollection();
-            if (collectionUpdated) {
-                this.view.animateCollectionIcon();
-            }
-            this.setActiveOverlay('reveal');
-            this.view.showReveal(revealContent, () => {
-                this.setActiveOverlay(null);
-                if (this.currentView === 'camera') {
-                    this.scanner.resumeAfterCooldown();
-                }
-            });
+            // Temporarily skip the collection-button glow while testing the
+            // paper fold transition; the moving paper should be the only
+            // visual event over the nav.
+            // Temporary camera animation test: bypass the deity reveal popup so
+            // the paper-fold overlay can be evaluated without the modal layer.
+            this.view.triggerPaperFoldReveal();
         } catch {
             this.setActiveOverlay(null);
             if (this.currentView === 'camera') {

@@ -71,12 +71,74 @@
                         <div class="qr-scanner-container" id="qrScanner">
                             <video id="qrVideo" width="100%" height="100%" autoplay muted playsinline></video>
                             <div class="qr-scanner-overlay">
-                                <div class="qr-rotating-circles">
-                                    <div class="qr-circle qr-circle-1"></div>
-                                    <div class="qr-circle qr-circle-2"></div>
+                                <div class="qr-scan-window" aria-hidden="true">
+                                    <span class="qr-highlight-left"></span>
+                                    <span class="qr-shadow-top"></span>
                                 </div>
                             </div>
                             <div class="qr-scanner-text">QR코드를 스캔해주세요</div>
+                            <div class="paper-fold-reveal-target" id="paperFoldRevealTarget" aria-hidden="true">
+                            </div>
+                            <div class="paper-fold-overlay" id="paperFoldOverlay" aria-hidden="true" hidden>
+                                <div class="paper-fold-stage">
+                                    <span class="paper-fold-left-duplicate-panel" aria-hidden="true">
+                                        <svg class="paper-fold-left-duplicate-svg" viewBox="-12 -12 124 124" preserveAspectRatio="none">
+                                            <polygon class="paper-fold-left-duplicate-shape" points="-12,-12 50,50 -12,112" />
+                                        </svg>
+                                    </span>
+                                    <span class="paper-fold-right-duplicate-panel" aria-hidden="true">
+                                        <svg class="paper-fold-right-duplicate-svg" viewBox="-12 -12 124 124" preserveAspectRatio="none">
+                                            <polygon class="paper-fold-right-duplicate-shape" points="112,-12 50,50 112,112" />
+                                        </svg>
+                                    </span>
+                                    <span class="paper-fold-top-duplicate-panel" aria-hidden="true">
+                                        <svg class="paper-fold-top-duplicate-svg" viewBox="-12 -12 124 124" preserveAspectRatio="none">
+                                            <polygon class="paper-fold-top-duplicate-extension" points="-44,-58 144,-58 112,-12 -12,-12" />
+                                            <polygon class="paper-fold-top-duplicate-shape" points="-12,-12 50,50 112,-12" />
+                                        </svg>
+                                    </span>
+                                    <span class="paper-fold-panel paper-fold-panel-left">
+                                        <svg class="paper-fold-svg" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                                            <defs>
+                                                <pattern id="paperFoldTextureLeft" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                                    <image href="./styles/assets/paper_main_moretexture.png" x="0" y="0" width="1" height="1" preserveAspectRatio="xMidYMid slice" />
+                                                </pattern>
+                                            </defs>
+                                            <polygon class="paper-fold-shape paper-fold-shape-left" points="-12,-12 50,50 -12,112" fill="url(#paperFoldTextureLeft) #d7c3a6" />
+                                        </svg>
+                                    </span>
+                                    <span class="paper-fold-panel paper-fold-panel-right">
+                                        <svg class="paper-fold-svg" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                                            <defs>
+                                                <pattern id="paperFoldTextureRight" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                                    <image href="./styles/assets/paper_main_moretexture.png" x="0" y="0" width="1" height="1" preserveAspectRatio="xMidYMid slice" />
+                                                </pattern>
+                                            </defs>
+                                            <polygon class="paper-fold-shape paper-fold-shape-right" points="112,-12 50,50 112,112" fill="url(#paperFoldTextureRight) #d7c3a6" />
+                                        </svg>
+                                    </span>
+                                    <span class="paper-fold-panel paper-fold-panel-top">
+                                        <svg class="paper-fold-svg" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                                            <defs>
+                                                <pattern id="paperFoldTextureTop" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                                    <image href="./styles/assets/paper_main_moretexture.png" x="0" y="0" width="1" height="1" preserveAspectRatio="xMidYMid slice" />
+                                                </pattern>
+                                            </defs>
+                                            <polygon class="paper-fold-shape paper-fold-shape-top" points="-12,-12 50,50 112,-12" fill="url(#paperFoldTextureTop) #d7c3a6" />
+                                        </svg>
+                                    </span>
+                                    <span class="paper-fold-panel paper-fold-panel-bottom">
+                                        <svg class="paper-fold-svg" viewBox="-12 -12 124 124" preserveAspectRatio="none" aria-hidden="true">
+                                            <defs>
+                                                <pattern id="paperFoldTextureBottom" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width="1" height="1">
+                                                    <image href="./styles/assets/paper_main_moretexture.png" x="0" y="0" width="1" height="1" preserveAspectRatio="xMidYMid slice" />
+                                                </pattern>
+                                            </defs>
+                                            <polygon class="paper-fold-shape paper-fold-shape-bottom" points="-12,112 50,50 112,112" fill="url(#paperFoldTextureBottom) #d7c3a6" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </section>
 

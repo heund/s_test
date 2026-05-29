@@ -205,7 +205,8 @@ button:focus-visible,
 
 #app.view-home:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-header,
 #app.view-home:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-nav-layer,
-#app.view-camera:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-nav-layer {
+#app.view-camera:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-nav-layer,
+#app.view-result:not(.intro-visible):not(.overlay-reveal):not(.overlay-camera-error) .app-nav-layer {
     opacity: 1;
     visibility: visible;
 }

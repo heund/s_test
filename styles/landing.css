@@ -279,12 +279,12 @@
     align-items: center;
     justify-content: center;
     color: #fff;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(26, 20, 14, 0.82);
+    border: 1px solid rgba(255, 244, 220, 0.3);
     border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 8px 28px rgba(35, 23, 12, 0.32);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     cursor: pointer;
     white-space: nowrap;
 }
@@ -295,8 +295,8 @@
 }
 
 .bottom-nav-item.is-active {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.38);
+    background: rgba(54, 38, 22, 0.92);
+    border-color: rgba(255, 244, 220, 0.52);
 }
 
 .bottom-nav-item.collection-icon-glow {
@@ -306,55 +306,471 @@
 }
 
 .qr-scanner-overlay {
+    --scan-window-size: min(50vw, 224px, 43dvh);
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     pointer-events: none;
+    background: #00e5ff;
+    box-shadow: inset 0 0 80px rgba(35, 24, 15, 0.22);
+    mask:
+        linear-gradient(#000 0 0) center / var(--scan-window-size) var(--scan-window-size) no-repeat exclude,
+        linear-gradient(#000 0 0);
+    -webkit-mask:
+        linear-gradient(#000 0 0) center / var(--scan-window-size) var(--scan-window-size) no-repeat,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
 }
 
-.qr-rotating-circles {
+.qr-scan-window {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: min(300px, 76vw, 76dvh);
+    width: var(--scan-window-size);
     aspect-ratio: 1;
     transform: translate(-50%, -50%);
+    border: 2px solid rgba(253, 244, 231, 0.92);
+    box-shadow:
+        0 0 0 1px rgba(47, 34, 20, 0.58),
+        0 18px 42px rgba(58, 38, 20, 0.34);
+}
+
+.qr-scan-window::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 3%;
+    bottom: -1px;
+    left: calc(100% + 1px);
+    width: clamp(5px, 1.4vw, 8px);
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.82) 36%, rgba(255, 255, 255, 0)),
+        linear-gradient(90deg, rgba(255, 242, 190, 0.88), rgba(255, 242, 190, 0));
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.8);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 100%);
     pointer-events: none;
 }
 
-.qr-circle {
+.qr-highlight-left {
     position: absolute;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    z-index: 1;
+    top: 3%;
+    bottom: -1px;
+    right: calc(100% + 1px);
+    width: clamp(5px, 1.4vw, 8px);
+    background:
+        linear-gradient(270deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.82) 36%, rgba(255, 255, 255, 0)),
+        linear-gradient(270deg, rgba(255, 242, 190, 0.88), rgba(255, 242, 190, 0));
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.8);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 100%);
+    pointer-events: none;
 }
 
-.qr-circle-1 {
+.qr-shadow-top {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background: transparent;
+    box-shadow:
+        0 -18px 42px -12px rgba(58, 38, 20, 0.44),
+        0 -8px 18px -8px rgba(112, 78, 38, 0.28);
+    pointer-events: none;
+}
+
+.qr-scanner-container.is-paper-reveal-visible .qr-scanner-overlay,
+.qr-scanner-container.is-paper-reveal-visible .qr-scanner-text {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.paper-fold-reveal-target {
+    position: fixed;
+    inset: 0;
+    z-index: 28;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    background: #ff00c8;
+}
+
+.paper-fold-reveal-target.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/*
+    Paper fold geometry:
+    each panel is a full-viewport layer containing one literal SVG polygon.
+    The polygon's tip sits at the viewport center, and the SVG texture pattern
+    fills that polygon's own bounds so no folded face can render empty.
+*/
+.paper-fold-overlay {
+    --cx: 50vw;
+    --cy: 50vh;
+    --overscan: 12vmax;
+    --fold-duration: 5200ms;
+    --open-duration: 5200ms;
+    --fold-total-duration: calc(var(--fold-duration) + var(--open-duration) + 900ms);
+    --fold-ease: cubic-bezier(.22, .8, .18, 1);
+    --fold-ease-reverse: cubic-bezier(.82, 0, .78, .2);
+    --paper-depth: 36px;
+    --fold-delay-right: 0ms;
+    --fold-delay-left: 220ms;
+    --fold-delay-top: 440ms;
+    --fold-delay-bottom: 660ms;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-nav) + 1);
+    overflow: hidden;
+    pointer-events: none;
+    perspective: 980px;
+    transform-style: preserve-3d;
+}
+
+.paper-fold-overlay[hidden] {
+    display: none;
+}
+
+.paper-fold-stage,
+.paper-fold-left-duplicate-panel,
+.paper-fold-right-duplicate-panel,
+.paper-fold-top-duplicate-panel,
+.paper-fold-panel {
+    position: absolute;
+    inset: 0;
+}
+
+.paper-fold-stage {
+    transform-style: preserve-3d;
+}
+
+.paper-fold-left-duplicate-panel {
+    z-index: 0;
+    transform-origin: var(--cx) var(--cy);
+    will-change: transform, opacity;
+}
+
+.paper-fold-right-duplicate-panel {
+    z-index: 0;
+    transform-origin: var(--cx) var(--cy);
+    will-change: transform, opacity;
+}
+
+.paper-fold-top-duplicate-panel {
+    z-index: 0;
+    transform-origin: var(--cx) var(--cy);
+    will-change: transform, opacity;
+}
+
+.paper-fold-panel {
+    z-index: 1;
+    opacity: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: none;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+}
+
+.paper-fold-svg,
+.paper-fold-left-duplicate-svg,
+.paper-fold-right-duplicate-svg,
+.paper-fold-top-duplicate-svg {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: 94%;
-    border-radius: 50% / 48%;
-    animation: rotate-slow 20s linear infinite;
-}
-
-.qr-circle-2 {
-    width: 94%;
     height: 100%;
-    border-radius: 48% / 50%;
-    animation: rotate-slow-reverse 25s linear infinite;
+    display: block;
+    overflow: visible;
+    pointer-events: none;
 }
 
-@keyframes rotate-slow {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
+.paper-fold-svg {
+    transform: translateZ(3px);
 }
 
-@keyframes rotate-slow-reverse {
-    from { transform: translate(-50%, -50%) rotate(360deg); }
-    to { transform: translate(-50%, -50%) rotate(0deg); }
+.paper-fold-left-duplicate-svg {
+    transform: translateZ(1px);
+}
+
+.paper-fold-right-duplicate-svg {
+    transform: translateZ(1px);
+}
+
+.paper-fold-top-duplicate-svg {
+    transform: translateZ(1px);
+}
+
+.paper-fold-shape {
+    stroke: none;
+    vector-effect: non-scaling-stroke;
+}
+
+.paper-fold-left-duplicate-shape {
+    fill: #000;
+    opacity: 1;
+    stroke: none;
+    transform: translate(3px, 3px);
+    vector-effect: non-scaling-stroke;
+}
+
+.paper-fold-right-duplicate-shape {
+    fill: #000;
+    opacity: 1;
+    stroke: none;
+    transform: translate(-3px, 3px);
+    vector-effect: non-scaling-stroke;
+}
+
+.paper-fold-top-duplicate-shape,
+.paper-fold-top-duplicate-extension {
+    fill: #000;
+    opacity: 1;
+    stroke: none;
+    transform: translate(3px, 3px);
+    vector-effect: non-scaling-stroke;
+}
+
+.paper-fold-top-duplicate-extension {
+    display: block;
+}
+
+.paper-fold-top-duplicate-shape {
+    display: block;
+}
+
+.paper-fold-shape-left {
+    fill: #ff2bd6;
+}
+
+.paper-fold-shape-right {
+    fill: #ffe600;
+}
+
+.paper-fold-shape-top {
+    fill: #20e070;
+}
+
+.paper-fold-shape-bottom {
+    fill: #00b7ff;
+}
+
+.paper-fold-panel-bottom {
+    display: none;
+}
+
+.paper-fold-panel-left {
+    transform-origin: var(--cx) var(--cy);
+}
+
+.paper-fold-panel-right {
+    transform-origin: var(--cx) var(--cy);
+}
+
+.paper-fold-panel-top {
+    transform-origin: var(--cx) var(--cy);
+}
+
+.paper-fold-panel-bottom {
+    transform-origin: var(--cx) var(--cy);
+}
+
+.paper-fold-overlay.is-folding .paper-fold-panel-right {
+    animation: paper-fold-right var(--fold-total-duration) var(--fold-ease) var(--fold-delay-right) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-right-duplicate-panel {
+    animation: paper-fold-right var(--fold-total-duration) var(--fold-ease) var(--fold-delay-right) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-right-duplicate-shape {
+    animation: paper-fold-right-duplicate-offset var(--fold-total-duration) linear var(--fold-delay-right) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-panel-left {
+    animation: paper-fold-left var(--fold-total-duration) var(--fold-ease) var(--fold-delay-left) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-left-duplicate-panel {
+    animation: paper-fold-left var(--fold-total-duration) var(--fold-ease) var(--fold-delay-left) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-left-duplicate-shape {
+    animation: paper-fold-left-duplicate-offset var(--fold-total-duration) linear var(--fold-delay-left) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-panel-top {
+    animation: paper-fold-top var(--fold-total-duration) var(--fold-ease) var(--fold-delay-top) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-top-duplicate-panel {
+    animation: paper-fold-top var(--fold-total-duration) var(--fold-ease) var(--fold-delay-top) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-top-duplicate-shape {
+    animation: paper-fold-top-duplicate-offset var(--fold-total-duration) linear var(--fold-delay-top) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-top-duplicate-extension {
+    animation: paper-fold-top-duplicate-extension var(--fold-total-duration) linear var(--fold-delay-top) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-panel-bottom {
+    transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg);
+    opacity: 1;
+}
+
+/*
+    The fold keyframes below are fallback definitions. Runtime keyframes are
+    generated from PAPER_FOLD_TIMELINE in scripts/views/app-view.js so close,
+    hold, open, and duplicate-offset timing stay mathematically linked.
+*/
+@keyframes paper-fold-right {
+    0% { opacity: 0; transform: translate3d(calc(100vw + var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(-62deg) rotateZ(0.7deg); animation-timing-function: var(--fold-ease); }
+    8% { opacity: 1; }
+    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    100% { opacity: 1; transform: translate3d(calc(100vw + var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(56deg) rotateZ(-0.4deg); }
+}
+
+@keyframes paper-fold-left {
+    0% { opacity: 0; transform: translate3d(calc(-100vw - var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(62deg) rotateZ(-0.8deg); animation-timing-function: var(--fold-ease); }
+    8% { opacity: 1; }
+    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    100% { opacity: 1; transform: translate3d(calc(-100vw - var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(-56deg) rotateZ(0.5deg); }
+}
+
+@keyframes paper-fold-left-duplicate-offset {
+    0%,
+    10% {
+        opacity: 1;
+        transform: translate(3px, 3px);
+    }
+
+    23%,
+    24.4% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
+
+    25.6%,
+    42%,
+    58% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+
+    82%,
+    100% {
+        opacity: 1;
+        transform: translate(3px, 3px);
+    }
+}
+
+@keyframes paper-fold-right-duplicate-offset {
+    0%,
+    10% {
+        opacity: 1;
+        transform: translate(-3px, 3px);
+    }
+
+    23%,
+    24.4% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
+
+    25.6%,
+    42%,
+    58% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+
+    82%,
+    100% {
+        opacity: 1;
+        transform: translate(-3px, 3px);
+    }
+}
+
+@keyframes paper-fold-top-duplicate-offset {
+    0%,
+    10% {
+        opacity: 1;
+        transform: translate(3px, 3px);
+    }
+
+    23%,
+    24.4% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
+
+    25.6%,
+    42%,
+    58% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+
+    82%,
+    100% {
+        opacity: 1;
+        transform: translate(3px, 3px);
+    }
+}
+
+@keyframes paper-fold-top-duplicate-extension {
+    0%,
+    10% {
+        opacity: 1;
+        transform: translate(3px, 3px);
+    }
+
+    23%,
+    42%,
+    58% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+
+    82%,
+    100% {
+        opacity: 1;
+        transform: translate(3px, 3px);
+    }
+}
+
+@keyframes paper-fold-top {
+    0% { opacity: 0; transform: translate3d(0, calc(-100vh - var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(-64deg) rotateZ(0.5deg); animation-timing-function: var(--fold-ease); }
+    8% { opacity: 1; }
+    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    100% { opacity: 1; transform: translate3d(0, calc(-100vh - var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(58deg) rotateZ(-0.3deg); }
+}
+
+@keyframes paper-fold-bottom {
+    0% { opacity: 0; transform: translate3d(0, calc(100vh + var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(64deg) rotateZ(-0.5deg); animation-timing-function: var(--fold-ease); }
+    8% { opacity: 1; }
+    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    100% { opacity: 1; transform: translate3d(0, calc(100vh + var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(-58deg) rotateZ(0.3deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .paper-fold-overlay.is-folding .paper-fold-panel,
+    .paper-fold-overlay.is-folding .paper-fold-left-duplicate-panel,
+    .paper-fold-overlay.is-folding .paper-fold-right-duplicate-panel,
+    .paper-fold-overlay.is-folding .paper-fold-top-duplicate-panel {
+        animation: none;
+    }
+
+    .paper-fold-panel,
+    .paper-fold-left-duplicate-panel,
+    .paper-fold-right-duplicate-panel,
+    .paper-fold-top-duplicate-panel {
+        opacity: 0;
+        transform: none;
+    }
 }
 
 .qr-scanner-text {
