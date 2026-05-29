@@ -1,7 +1,7 @@
 const PAPER_FOLD_TIMELINE = {
-    totalDurationMs: 11300,
+    totalDurationMs: 8400,
     closeEnd: 0.42,
-    openStart: 0.58,
+    openStart: 0.54,
     offsetHoldWithinClose: 0.24,
     offsetSettleWithinClose: 0.55,
     offsetReturn: 0.70
@@ -103,6 +103,20 @@ export class AppView {
     0%, ${offsetHold} { opacity: 1; transform: translate(3px, 3px); }
     ${offsetSettle}, ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
     ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, 3px); }
+}
+
+@keyframes paper-fold-bottom-duplicate-offset {
+    0%, ${offsetHold} { opacity: 1; transform: translate(3px, -3px); }
+    ${offsetSettle}, ${opacityFadeStart} { opacity: 1; transform: translate(0, 0); }
+    ${opacityHide} { opacity: 0; transform: translate(0, 0); }
+    ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, -3px); }
+}
+
+@keyframes paper-fold-bottom-duplicate-extension {
+    0%, ${offsetHold} { opacity: 1; transform: translate(3px, -3px); }
+    ${offsetSettle}, ${closeEnd}, ${openStart} { opacity: 0; transform: translate(0, 0); }
+    ${offsetReturn}, 100% { opacity: 1; transform: translate(3px, -3px); }
 }
 `;
     }

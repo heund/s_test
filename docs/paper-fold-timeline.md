@@ -20,9 +20,9 @@ The timing source lives in `scripts/views/app-view.js`:
 
 ```js
 const PAPER_FOLD_TIMELINE = {
-    totalDurationMs: 11300,
+    totalDurationMs: 8400,
     closeEnd: 0.42,
-    openStart: 0.58,
+    openStart: 0.54,
     offsetHoldWithinClose: 0.24,
     offsetSettleWithinClose: 0.55,
     offsetReturn: 0.70
@@ -52,7 +52,7 @@ The point in the total animation where the closed hold ends and the triangles be
 Example:
 
 ```text
-0.58 = 58%
+0.54 = 54%
 ```
 
 `offsetHoldWithinClose`
@@ -90,6 +90,23 @@ Example:
 ```
 
 So the duplicate returns to `translate(3px, 3px)` at `70%` of the total timeline.
+
+## Duplicate Opacity
+
+The duplicate/shadow triangles are black debug shapes behind the colored paper triangles.
+
+They are only meant to be visible while offset from the main triangle. When a duplicate reaches perfect alignment, black geometry can leak through antialiased seams near the center point, especially on the top triangle. To avoid that, duplicate opacity is animated separately from the main triangle motion.
+
+Current behavior:
+
+- duplicate is fully visible while offset
+- duplicate offset settles to `translate(0, 0)` around `23%`
+- duplicate remains visible briefly after settling
+- duplicate fades out over a short window around `24.4%` to `25.6%`
+- duplicate stays hidden through the closed hold
+- duplicate fades back in during opening, reaching full opacity by `offsetReturn`
+
+The close-side fade is intentionally short. A hard opacity snap caused visible center-point artifacts, while a long fade made the shadow disappear too early.
 
 ## Why This Exists
 
@@ -163,11 +180,13 @@ offsetReturn: 0.78
 
 The current PWA fold is in a debug state:
 
-- only the left/pink triangle is visible
-- the left duplicate/blue triangle sits behind it
+- all four debug-colored fold triangles are visible
+- black duplicate/shadow triangles sit behind the visible triangles
 - the duplicate offset is currently `translate(3px, 3px)`
 - the duplicate offset settles to `translate(0, 0)` based on `offsetSettleWithinClose`
+- top and bottom duplicates include trapezoid extensions
 - result page debug color is enabled
 - camera background debug color is enabled
 
 This should be cleaned up before production styling.
+

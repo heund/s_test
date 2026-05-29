@@ -412,7 +412,7 @@
     --fold-duration: 5200ms;
     --open-duration: 5200ms;
     --fold-total-duration: calc(var(--fold-duration) + var(--open-duration) + 900ms);
-    --fold-ease: cubic-bezier(.22, .8, .18, 1);
+    --fold-ease: cubic-bezier(.3, .62, .48, 1);
     --fold-ease-reverse: cubic-bezier(.82, 0, .78, .2);
     --paper-depth: 36px;
     --fold-delay-right: 0ms;
@@ -436,6 +436,7 @@
 .paper-fold-left-duplicate-panel,
 .paper-fold-right-duplicate-panel,
 .paper-fold-top-duplicate-panel,
+.paper-fold-bottom-duplicate-panel,
 .paper-fold-panel {
     position: absolute;
     inset: 0;
@@ -463,6 +464,12 @@
     will-change: transform, opacity;
 }
 
+.paper-fold-bottom-duplicate-panel {
+    z-index: 0;
+    transform-origin: var(--cx) var(--cy);
+    will-change: transform, opacity;
+}
+
 .paper-fold-panel {
     z-index: 1;
     opacity: 0;
@@ -476,7 +483,8 @@
 .paper-fold-svg,
 .paper-fold-left-duplicate-svg,
 .paper-fold-right-duplicate-svg,
-.paper-fold-top-duplicate-svg {
+.paper-fold-top-duplicate-svg,
+.paper-fold-bottom-duplicate-svg {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -499,6 +507,10 @@
 }
 
 .paper-fold-top-duplicate-svg {
+    transform: translateZ(1px);
+}
+
+.paper-fold-bottom-duplicate-svg {
     transform: translateZ(1px);
 }
 
@@ -532,6 +544,15 @@
     vector-effect: non-scaling-stroke;
 }
 
+.paper-fold-bottom-duplicate-shape,
+.paper-fold-bottom-duplicate-extension {
+    fill: #000;
+    opacity: 1;
+    stroke: none;
+    transform: translate(3px, -3px);
+    vector-effect: non-scaling-stroke;
+}
+
 .paper-fold-top-duplicate-extension {
     display: block;
 }
@@ -554,10 +575,6 @@
 
 .paper-fold-shape-bottom {
     fill: #00b7ff;
-}
-
-.paper-fold-panel-bottom {
-    display: none;
 }
 
 .paper-fold-panel-left {
@@ -617,8 +634,19 @@
 }
 
 .paper-fold-overlay.is-folding .paper-fold-panel-bottom {
-    transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg);
-    opacity: 1;
+    animation: paper-fold-bottom var(--fold-total-duration) var(--fold-ease) var(--fold-delay-bottom) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-bottom-duplicate-panel {
+    animation: paper-fold-bottom var(--fold-total-duration) var(--fold-ease) var(--fold-delay-bottom) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-bottom-duplicate-shape {
+    animation: paper-fold-bottom-duplicate-offset var(--fold-total-duration) linear var(--fold-delay-bottom) both;
+}
+
+.paper-fold-overlay.is-folding .paper-fold-bottom-duplicate-extension {
+    animation: paper-fold-bottom-duplicate-extension var(--fold-total-duration) linear var(--fold-delay-bottom) both;
 }
 
 /*
@@ -629,14 +657,14 @@
 @keyframes paper-fold-right {
     0% { opacity: 0; transform: translate3d(calc(100vw + var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(-62deg) rotateZ(0.7deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    42%, 54% { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
     100% { opacity: 1; transform: translate3d(calc(100vw + var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(56deg) rotateZ(-0.4deg); }
 }
 
 @keyframes paper-fold-left {
     0% { opacity: 0; transform: translate3d(calc(-100vw - var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(62deg) rotateZ(-0.8deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    42%, 54% { opacity: 1; transform: translate3d(0, 0, 0) rotateY(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
     100% { opacity: 1; transform: translate3d(calc(-100vw - var(--overscan)), 0, calc(-1 * var(--paper-depth))) rotateY(-56deg) rotateZ(0.5deg); }
 }
 
@@ -655,7 +683,7 @@
 
     25.6%,
     42%,
-    58% {
+    54% {
         opacity: 0;
         transform: translate(0, 0);
     }
@@ -682,7 +710,7 @@
 
     25.6%,
     42%,
-    58% {
+    54% {
         opacity: 0;
         transform: translate(0, 0);
     }
@@ -709,7 +737,7 @@
 
     25.6%,
     42%,
-    58% {
+    54% {
         opacity: 0;
         transform: translate(0, 0);
     }
@@ -730,7 +758,7 @@
 
     23%,
     42%,
-    58% {
+    54% {
         opacity: 0;
         transform: translate(0, 0);
     }
@@ -742,17 +770,65 @@
     }
 }
 
+@keyframes paper-fold-bottom-duplicate-offset {
+    0%,
+    10% {
+        opacity: 1;
+        transform: translate(3px, -3px);
+    }
+
+    23%,
+    24.4% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
+
+    25.6%,
+    42%,
+    54% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+
+    82%,
+    100% {
+        opacity: 1;
+        transform: translate(3px, -3px);
+    }
+}
+
+@keyframes paper-fold-bottom-duplicate-extension {
+    0%,
+    10% {
+        opacity: 1;
+        transform: translate(3px, -3px);
+    }
+
+    23%,
+    42%,
+    54% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+
+    82%,
+    100% {
+        opacity: 1;
+        transform: translate(3px, -3px);
+    }
+}
+
 @keyframes paper-fold-top {
     0% { opacity: 0; transform: translate3d(0, calc(-100vh - var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(-64deg) rotateZ(0.5deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    42%, 54% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
     100% { opacity: 1; transform: translate3d(0, calc(-100vh - var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(58deg) rotateZ(-0.3deg); }
 }
 
 @keyframes paper-fold-bottom {
     0% { opacity: 0; transform: translate3d(0, calc(100vh + var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(64deg) rotateZ(-0.5deg); animation-timing-function: var(--fold-ease); }
     8% { opacity: 1; }
-    42%, 58% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
+    42%, 54% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(0deg) rotateZ(0deg); animation-timing-function: var(--fold-ease-reverse); }
     100% { opacity: 1; transform: translate3d(0, calc(100vh + var(--overscan)), calc(-1 * var(--paper-depth))) rotateX(-58deg) rotateZ(0.3deg); }
 }
 
@@ -760,14 +836,16 @@
     .paper-fold-overlay.is-folding .paper-fold-panel,
     .paper-fold-overlay.is-folding .paper-fold-left-duplicate-panel,
     .paper-fold-overlay.is-folding .paper-fold-right-duplicate-panel,
-    .paper-fold-overlay.is-folding .paper-fold-top-duplicate-panel {
+    .paper-fold-overlay.is-folding .paper-fold-top-duplicate-panel,
+    .paper-fold-overlay.is-folding .paper-fold-bottom-duplicate-panel {
         animation: none;
     }
 
     .paper-fold-panel,
     .paper-fold-left-duplicate-panel,
     .paper-fold-right-duplicate-panel,
-    .paper-fold-top-duplicate-panel {
+    .paper-fold-top-duplicate-panel,
+    .paper-fold-bottom-duplicate-panel {
         opacity: 0;
         transform: none;
     }
@@ -1038,3 +1116,7 @@
         max-height: calc(var(--viewport-height) - var(--safe-top) - var(--safe-bottom) - (var(--overlay-margin) * 2));
     }
 }
+
+
+
+
