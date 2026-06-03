@@ -433,11 +433,12 @@ export class AppController {
             // visual event over the nav.
             // Temporary camera animation test: bypass the deity reveal popup so
             // the paper-fold overlay can be evaluated without the modal layer.
-            this.view.triggerPaperFoldReveal(this.getPaperFoldRevealPayload(resolution)).finally(() => {
-                if (this.currentView === 'camera') {
-                    this.setCurrentView('result');
-                }
-            });
+            // Temporary direct-result test: QR success skips the paper-fold
+            // transition and shows the result page immediately.
+            this.view.showPaperFoldResult(this.getPaperFoldRevealPayload(resolution));
+            if (this.currentView === 'camera') {
+                this.setCurrentView('result');
+            }
         } catch {
             this.setActiveOverlay(null);
             if (this.currentView === 'camera') {

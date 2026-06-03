@@ -249,6 +249,18 @@ export class AppView {
         });
     }
 
+    showPaperFoldResult(result = {}) {
+        const { paperFoldRevealTarget, qrScanner } = this.elements;
+        if (!paperFoldRevealTarget) return;
+
+        this.renderPaperFoldResult(result);
+        paperFoldRevealTarget.classList.add('is-visible');
+        paperFoldRevealTarget.setAttribute('aria-hidden', 'false');
+        if (qrScanner) {
+            qrScanner.classList.add('is-paper-reveal-visible');
+        }
+    }
+
     hidePaperFoldResult() {
         const { paperFoldRevealTarget, qrScanner } = this.elements;
 
