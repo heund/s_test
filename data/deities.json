@@ -8,5 +8,55 @@
     "id": "hanra",
     "displayName": "Deity 2",
     "active": true
+  },
+  {
+    "id": "sample-qr-003",
+    "displayName": "QR 3",
+    "active": true
+  },
+  {
+    "id": "sample-qr-004",
+    "displayName": "QR 4",
+    "active": true
+  },
+  {
+    "id": "sample-qr-005",
+    "displayName": "QR 5",
+    "active": true
+  },
+  {
+    "id": "sample-qr-006",
+    "displayName": "QR 6",
+    "active": true
+  },
+  {
+    "id": "sample-qr-007",
+    "displayName": "QR 7",
+    "active": true
+  },
+  {
+    "id": "sample-qr-008",
+    "displayName": "QR 8",
+    "active": true
+  },
+  {
+    "id": "sample-qr-009",
+    "displayName": "QR 9",
+    "active": true
+  },
+  {
+    "id": "sample-qr-010",
+    "displayName": "QR 10",
+    "active": true
+  },
+  {
+    "id": "sample-qr-011",
+    "displayName": "QR 11",
+    "active": true
+  },
+  {
+    "id": "sample-qr-012",
+    "displayName": "QR 12",
+    "active": true
   }
 ]

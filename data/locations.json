@@ -8,5 +8,55 @@
     "id": "loc-002",
     "label": "Location 2",
     "active": true
+  },
+  {
+    "id": "loc-003",
+    "label": "Location 3",
+    "active": true
+  },
+  {
+    "id": "loc-004",
+    "label": "Location 4",
+    "active": true
+  },
+  {
+    "id": "loc-005",
+    "label": "Location 5",
+    "active": true
+  },
+  {
+    "id": "loc-006",
+    "label": "Location 6",
+    "active": true
+  },
+  {
+    "id": "loc-007",
+    "label": "Location 7",
+    "active": true
+  },
+  {
+    "id": "loc-008",
+    "label": "Location 8",
+    "active": true
+  },
+  {
+    "id": "loc-009",
+    "label": "Location 9",
+    "active": true
+  },
+  {
+    "id": "loc-010",
+    "label": "Location 10",
+    "active": true
+  },
+  {
+    "id": "loc-011",
+    "label": "Location 11",
+    "active": true
+  },
+  {
+    "id": "loc-012",
+    "label": "Location 12",
+    "active": true
   }
 ]

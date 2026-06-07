@@ -357,7 +357,17 @@ export class AppController {
             }
         };
 
-        return deityRevealAssets[resolution.qrCode.id] || null;
+        if (deityRevealAssets[resolution.qrCode.id]) {
+            return deityRevealAssets[resolution.qrCode.id];
+        }
+
+        if (resolution.qrCode.sampleText) {
+            return {
+                sampleText: resolution.qrCode.sampleText
+            };
+        }
+
+        return null;
     }
 
     async handleScan(rawValue) {

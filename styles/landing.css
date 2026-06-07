@@ -412,6 +412,20 @@
     pointer-events: none;
 }
 
+.paper-fold-result-text {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    padding: 0 28px;
+    color: #17120d;
+    font-size: clamp(52px, 18vw, 132px);
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+}
+
 /*
     Paper fold geometry:
     each panel is a full-viewport layer containing one literal SVG polygon.

@@ -184,6 +184,15 @@ export class AppView {
         if (!paperFoldRevealTarget) return;
 
         paperFoldRevealTarget.replaceChildren();
+
+        if (result?.sampleText) {
+            const sampleText = document.createElement('p');
+            sampleText.className = 'paper-fold-result-text';
+            sampleText.textContent = result.sampleText;
+            paperFoldRevealTarget.appendChild(sampleText);
+            return;
+        }
+
         if (!result?.deityImageSrc) return;
 
         const deityImage = document.createElement('img');

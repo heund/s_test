@@ -8,5 +8,55 @@
     "qrId": "qr-jejushin-67891",
     "locationId": "loc-002",
     "deityId": "hanra"
+  },
+  {
+    "qrId": "qr-jejushin-00003",
+    "locationId": "loc-003",
+    "deityId": "sample-qr-003"
+  },
+  {
+    "qrId": "qr-jejushin-00004",
+    "locationId": "loc-004",
+    "deityId": "sample-qr-004"
+  },
+  {
+    "qrId": "qr-jejushin-00005",
+    "locationId": "loc-005",
+    "deityId": "sample-qr-005"
+  },
+  {
+    "qrId": "qr-jejushin-00006",
+    "locationId": "loc-006",
+    "deityId": "sample-qr-006"
+  },
+  {
+    "qrId": "qr-jejushin-00007",
+    "locationId": "loc-007",
+    "deityId": "sample-qr-007"
+  },
+  {
+    "qrId": "qr-jejushin-00008",
+    "locationId": "loc-008",
+    "deityId": "sample-qr-008"
+  },
+  {
+    "qrId": "qr-jejushin-00009",
+    "locationId": "loc-009",
+    "deityId": "sample-qr-009"
+  },
+  {
+    "qrId": "qr-jejushin-00010",
+    "locationId": "loc-010",
+    "deityId": "sample-qr-010"
+  },
+  {
+    "qrId": "qr-jejushin-00011",
+    "locationId": "loc-011",
+    "deityId": "sample-qr-011"
+  },
+  {
+    "qrId": "qr-jejushin-00012",
+    "locationId": "loc-012",
+    "deityId": "sample-qr-012"
   }
 ]

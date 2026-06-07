@@ -10,5 +10,75 @@
     "value": "https://heund.github.io/jeju_mockup/q/jejushin67891",
     "locationId": "loc-002",
     "active": true
+  },
+  {
+    "id": "qr-jejushin-00003",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00003",
+    "locationId": "loc-003",
+    "sampleText": "QR 3",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00004",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00004",
+    "locationId": "loc-004",
+    "sampleText": "QR 4",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00005",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00005",
+    "locationId": "loc-005",
+    "sampleText": "QR 5",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00006",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00006",
+    "locationId": "loc-006",
+    "sampleText": "QR 6",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00007",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00007",
+    "locationId": "loc-007",
+    "sampleText": "QR 7",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00008",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00008",
+    "locationId": "loc-008",
+    "sampleText": "QR 8",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00009",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00009",
+    "locationId": "loc-009",
+    "sampleText": "QR 9",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00010",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00010",
+    "locationId": "loc-010",
+    "sampleText": "QR 10",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00011",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00011",
+    "locationId": "loc-011",
+    "sampleText": "QR 11",
+    "active": true
+  },
+  {
+    "id": "qr-jejushin-00012",
+    "value": "https://heund.github.io/jeju_mockup/q/jejushin00012",
+    "locationId": "loc-012",
+    "sampleText": "QR 12",
+    "active": true
   }
 ]
