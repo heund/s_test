@@ -44,6 +44,7 @@ export class AppController {
             navButtons: Array.from(document.querySelectorAll('[data-view-target]')),
             surfaceCloseButtons: Array.from(document.querySelectorAll('[data-close-surface]')),
             qrVideo: document.getElementById('qrVideo'),
+            qrScannerDiagnostics: document.getElementById('qrScannerDiagnostics'),
             collectionGrid: document.getElementById('collectionGrid'),
             collectionEmpty: document.getElementById('collectionEmpty'),
             qrScanner: document.getElementById('qrScanner'),
@@ -59,7 +60,8 @@ export class AppController {
         this.scanner = new QRScanner({
             videoElement: this.elements.qrVideo,
             onScan: rawValue => this.handleScan(rawValue),
-            onError: message => this.handleScannerError(message)
+            onError: message => this.handleScannerError(message),
+            onDiagnostic: diagnostic => this.view.renderScannerDiagnostics(diagnostic)
         });
     }
 
@@ -365,6 +367,10 @@ export class AppController {
         const baseResolution = this.qrResolver.resolve(rawValue);
 
         if (baseResolution.status !== 'resolved') {
+            this.view.renderScannerDiagnostics({
+                status: `decoded-${baseResolution.status}`,
+                value: baseResolution.rawValue || rawValue
+            });
             console.info('[App scan]', 'scan rejected by resolver', {
                 status: baseResolution.status,
                 rawValue: baseResolution.rawValue || rawValue
@@ -379,6 +385,11 @@ export class AppController {
         }
 
         const resolution = this.assignmentResolver.resolve(baseResolution);
+        this.view.renderScannerDiagnostics({
+            status: 'resolved',
+            value: rawValue,
+            qrId: resolution.qrCode.id
+        });
         console.info('[App scan]', 'scan resolved', {
             qrId: resolution.qrCode.id,
             locationId: resolution.location.id,

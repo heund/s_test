@@ -909,6 +909,25 @@
     overflow-wrap: anywhere;
 }
 
+.qr-scanner-diagnostics {
+    position: fixed;
+    right: calc(var(--safe-right) + var(--shell-pad-x));
+    bottom: calc(var(--safe-bottom) + var(--shell-pad-y) + var(--bottom-nav-space) + 52px);
+    left: calc(var(--safe-left) + var(--shell-pad-x));
+    z-index: 32;
+    min-height: 32px;
+    padding: 8px 10px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.25;
+    text-align: center;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+}
+
 .deity-reveal {
     position: fixed;
     inset: 0;

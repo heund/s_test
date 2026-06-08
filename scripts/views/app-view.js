@@ -28,6 +28,8 @@ function shiftedOpenPhase(panelDelayMs, sequenceIndex) {
 export class AppView {
     constructor(elements) {
         this.elements = elements;
+        this.scannerDiagnosticState = {};
+        this.showScannerDiagnosticsPanel = new URLSearchParams(window.location.search).get('debugScanner') === '1';
         this.mountPaperFoldOverlay();
         this.syncPaperFoldTimeline();
     }
@@ -177,6 +179,54 @@ export class AppView {
         window.setTimeout(() => {
             landingAnimation.style.display = 'none';
         }, 600);
+    }
+
+    renderScannerDiagnostics(diagnostic = {}) {
+        const { qrScannerDiagnostics } = this.elements;
+
+        this.scannerDiagnosticState = {
+            ...this.scannerDiagnosticState,
+            ...diagnostic
+        };
+
+        const nativeStatus = this.scannerDiagnosticState.native
+            ? `native: ${this.scannerDiagnosticState.native}`
+            : null;
+        const passStatus = this.scannerDiagnosticState.passName
+            ? `pass: ${this.scannerDiagnosticState.passName}`
+            : null;
+        const timingStatus = Number.isFinite(this.scannerDiagnosticState.durationMs)
+            ? `last: ${Math.round(this.scannerDiagnosticState.durationMs)}ms`
+            : null;
+        const decodedStatus = this.scannerDiagnosticState.decoded
+            ? `decoded: ${this.scannerDiagnosticState.value || 'yes'}`
+            : null;
+        const status = this.scannerDiagnosticState.status
+            ? `status: ${this.scannerDiagnosticState.status}`
+            : null;
+        const qrIdStatus = this.scannerDiagnosticState.qrId
+            ? `qr: ${this.scannerDiagnosticState.qrId}`
+            : null;
+
+        const diagnosticText = [
+            nativeStatus,
+            passStatus,
+            timingStatus,
+            decodedStatus,
+            status,
+            qrIdStatus
+        ].filter(Boolean).join(' | ');
+
+        if (diagnosticText) {
+            console.info('[QR diagnostics]', diagnosticText);
+        }
+
+        if (!qrScannerDiagnostics) return;
+
+        qrScannerDiagnostics.hidden = !this.showScannerDiagnosticsPanel;
+        if (this.showScannerDiagnosticsPanel) {
+            qrScannerDiagnostics.textContent = diagnosticText;
+        }
     }
 
     renderPaperFoldResult(result = {}) {

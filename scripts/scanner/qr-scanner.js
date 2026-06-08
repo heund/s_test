@@ -26,6 +26,7 @@ export class QRScanner {
         videoElement,
         onScan,
         onError,
+        onDiagnostic,
         scanIntervalMs = 90,
         duplicateCooldownMs = 3000,
         resumeCooldownMs = 1500,
@@ -34,6 +35,7 @@ export class QRScanner {
         this.videoElement = videoElement;
         this.onScan = onScan;
         this.onError = onError;
+        this.onDiagnostic = onDiagnostic;
         this.scanIntervalMs = scanIntervalMs;
         this.duplicateCooldownMs = duplicateCooldownMs;
         this.resumeCooldownMs = resumeCooldownMs;
@@ -366,6 +368,9 @@ export class QRScanner {
 
     async prepareNativeBarcodeDetector() {
         if (!('BarcodeDetector' in window)) {
+            this.emitDiagnostic({
+                native: 'off'
+            });
             return;
         }
 
@@ -373,16 +378,26 @@ export class QRScanner {
             if (typeof window.BarcodeDetector.getSupportedFormats === 'function') {
                 const supportedFormats = await window.BarcodeDetector.getSupportedFormats();
                 if (!supportedFormats.includes('qr_code')) {
+                    this.emitDiagnostic({
+                        native: 'unsupported'
+                    });
                     return;
                 }
             }
 
             this.nativeBarcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
             this.nativeBarcodeDetectorReady = true;
+            this.emitDiagnostic({
+                native: 'on'
+            });
             debugScanner('native BarcodeDetector enabled');
         } catch (error) {
             this.nativeBarcodeDetector = null;
             this.nativeBarcodeDetectorReady = false;
+            this.emitDiagnostic({
+                native: 'error',
+                status: error.message || 'BarcodeDetector error'
+            });
             debugScanner('native BarcodeDetector unavailable', {
                 message: error.message || 'Unknown BarcodeDetector error'
             });
@@ -394,6 +409,7 @@ export class QRScanner {
             return null;
         }
 
+        const startedAt = performance.now();
         try {
             const barcodes = await this.nativeBarcodeDetector.detect(source);
             const qrCode = barcodes.find(barcode => {
@@ -404,6 +420,13 @@ export class QRScanner {
                 return null;
             }
 
+            this.emitDiagnostic({
+                native: 'on',
+                passName: `${passName}-native`,
+                durationMs: performance.now() - startedAt,
+                decoded: true,
+                value: qrCode.rawValue
+            });
             debugScanner('QR decoded', {
                 passName: `${passName}-native`,
                 width: source.width,
@@ -415,6 +438,12 @@ export class QRScanner {
             };
         } catch (error) {
             this.nativeBarcodeDetectorReady = false;
+            this.emitDiagnostic({
+                native: 'error',
+                passName: `${passName}-native`,
+                durationMs: performance.now() - startedAt,
+                status: 'native-fallback-jsqr'
+            });
             debugScanner('native BarcodeDetector failed; falling back to jsQR', {
                 message: error.message || 'Unknown BarcodeDetector error'
             });
@@ -423,8 +452,17 @@ export class QRScanner {
     }
 
     decodeImageData(imageData, passName) {
+        const startedAt = performance.now();
         const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
             inversionAttempts: 'dontInvert'
+        });
+
+        this.emitDiagnostic({
+            native: this.nativeBarcodeDetectorReady ? 'on' : 'off',
+            passName,
+            durationMs: performance.now() - startedAt,
+            decoded: Boolean(code && code.data),
+            value: code && code.data ? code.data : ''
         });
 
         if (code && code.data) {
@@ -469,6 +507,12 @@ export class QRScanner {
 
         this.lastHeartbeatAt = now;
         debugScanner(message, details);
+    }
+
+    emitDiagnostic(diagnostic) {
+        if (this.onDiagnostic) {
+            this.onDiagnostic(diagnostic);
+        }
     }
 }
 
