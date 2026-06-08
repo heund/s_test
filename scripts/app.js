@@ -338,36 +338,21 @@ export class AppController {
     }
 
     getPaperFoldRevealPayload(resolution) {
-        const deityRevealAssets = {
-            'qr-001': {
-                deityImageSrc: './styles/assets/deity/GANGNIM.svg',
-                deityImageAlt: 'Gangnim deity'
-            },
-            'qr-jejushin-12345': {
-                deityImageSrc: './styles/assets/deity/GANGNIM.svg',
-                deityImageAlt: 'Gangnim deity'
-            },
-            'qr-002': {
-                deityImageSrc: './styles/assets/deity/CHOGONGSHIN.svg',
-                deityImageAlt: 'Chogongshin deity'
-            },
-            'qr-jejushin-67891': {
-                deityImageSrc: './styles/assets/deity/CHOGONGSHIN.svg',
-                deityImageAlt: 'Chogongshin deity'
-            }
-        };
-
-        if (deityRevealAssets[resolution.qrCode.id]) {
-            return deityRevealAssets[resolution.qrCode.id];
-        }
-
         if (resolution.qrCode.sampleText) {
             return {
                 sampleText: resolution.qrCode.sampleText
             };
         }
 
-        return null;
+        const qrNumberById = {
+            'qr-jejushin-12345': 1,
+            'qr-jejushin-67891': 2
+        };
+        const qrNumber = qrNumberById[resolution.qrCode.id];
+
+        return {
+            sampleText: qrNumber ? `QR ${qrNumber}` : resolution.qrCode.id
+        };
     }
 
     async handleScan(rawValue) {
