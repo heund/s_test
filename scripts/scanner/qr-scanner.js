@@ -45,6 +45,8 @@ export class QRScanner {
         this.resumeTimer = null;
         this.scanCanvas = document.createElement('canvas');
         this.scanContext = this.scanCanvas.getContext('2d', { willReadFrequently: true });
+        this.nativeBarcodeDetector = null;
+        this.nativeBarcodeDetectorReady = false;
         this.lastScanAttemptAt = 0;
         this.lastAcceptedValue = null;
         this.lastAcceptedAt = 0;
@@ -91,6 +93,7 @@ export class QRScanner {
         }
 
         this.setState(SCANNER_STATES.REQUESTING_PERMISSION);
+        await this.prepareNativeBarcodeDetector();
         debugScanner('requesting camera permission');
 
         try {
@@ -259,11 +262,11 @@ export class QRScanner {
         window.clearTimeout(this.scanTimer);
 
         this.scanTimer = window.setTimeout(() => {
-            this.scan();
+            void this.scan();
         }, this.scanIntervalMs);
     }
 
-    scan() {
+    async scan() {
         if (this.state !== SCANNER_STATES.ACTIVE) {
             if (PAUSE_STATES.has(this.state) || this.state === SCANNER_STATES.COOLDOWN) {
                 return;
@@ -278,7 +281,7 @@ export class QRScanner {
                 videoWidth: this.videoElement.videoWidth,
                 videoHeight: this.videoElement.videoHeight
             });
-            const code = this.decodeVideoFrame();
+            const code = await this.decodeVideoFrame();
 
             const rawValue = code && code.data ? code.data.trim() : '';
             if (rawValue && this.canProcess(rawValue)) {
@@ -297,7 +300,7 @@ export class QRScanner {
         this.scheduleScan();
     }
 
-    decodeVideoFrame() {
+    async decodeVideoFrame() {
         const videoWidth = this.videoElement.videoWidth;
         const videoHeight = this.videoElement.videoHeight;
         if (!videoWidth || !videoHeight) return null;
@@ -306,7 +309,7 @@ export class QRScanner {
         const cropX = Math.round((videoWidth - cropSide) / 2);
         const cropY = Math.round((videoHeight - cropSide) / 2);
 
-        const centerCode = this.decodeVideoRegion({
+        const centerCode = await this.decodeVideoRegion({
             sourceX: cropX,
             sourceY: cropY,
             sourceWidth: cropSide,
@@ -328,7 +331,7 @@ export class QRScanner {
         });
     }
 
-    decodeVideoRegion({ sourceX, sourceY, sourceWidth, sourceHeight, maxWidth, passName }) {
+    async decodeVideoRegion({ sourceX, sourceY, sourceWidth, sourceHeight, maxWidth, passName }) {
         const scale = Math.min(1, maxWidth / sourceWidth);
         const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
         const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
@@ -352,8 +355,71 @@ export class QRScanner {
             targetHeight
         );
 
+        const nativeCode = await this.decodeWithNativeDetector(this.scanCanvas, passName);
+        if (nativeCode) {
+            return nativeCode;
+        }
+
         const imageData = this.scanContext.getImageData(0, 0, targetWidth, targetHeight);
         return this.decodeImageData(imageData, passName);
+    }
+
+    async prepareNativeBarcodeDetector() {
+        if (!('BarcodeDetector' in window)) {
+            return;
+        }
+
+        try {
+            if (typeof window.BarcodeDetector.getSupportedFormats === 'function') {
+                const supportedFormats = await window.BarcodeDetector.getSupportedFormats();
+                if (!supportedFormats.includes('qr_code')) {
+                    return;
+                }
+            }
+
+            this.nativeBarcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
+            this.nativeBarcodeDetectorReady = true;
+            debugScanner('native BarcodeDetector enabled');
+        } catch (error) {
+            this.nativeBarcodeDetector = null;
+            this.nativeBarcodeDetectorReady = false;
+            debugScanner('native BarcodeDetector unavailable', {
+                message: error.message || 'Unknown BarcodeDetector error'
+            });
+        }
+    }
+
+    async decodeWithNativeDetector(source, passName) {
+        if (!this.nativeBarcodeDetectorReady || !this.nativeBarcodeDetector) {
+            return null;
+        }
+
+        try {
+            const barcodes = await this.nativeBarcodeDetector.detect(source);
+            const qrCode = barcodes.find(barcode => {
+                return barcode.rawValue && (!barcode.format || barcode.format === 'qr_code');
+            });
+
+            if (!qrCode) {
+                return null;
+            }
+
+            debugScanner('QR decoded', {
+                passName: `${passName}-native`,
+                width: source.width,
+                height: source.height
+            });
+
+            return {
+                data: qrCode.rawValue
+            };
+        } catch (error) {
+            this.nativeBarcodeDetectorReady = false;
+            debugScanner('native BarcodeDetector failed; falling back to jsQR', {
+                message: error.message || 'Unknown BarcodeDetector error'
+            });
+            return null;
+        }
     }
 
     decodeImageData(imageData, passName) {
