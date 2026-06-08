@@ -15,16 +15,18 @@ const PAUSE_STATES = new Set([
     SCANNER_STATES.PAUSED_FOR_MAP
 ]);
 
-const SCANNER_DEBUG = true;
+const SCANNER_DEBUG = false;
 const SCAN_HEARTBEAT_MS = 2000;
-const SCAN_MAX_WIDTH = 720;
+const CENTER_SCAN_RATIO = 0.72;
+const CENTER_SCAN_MAX_WIDTH = 640;
+const FULL_SCAN_MAX_WIDTH = 720;
 
 export class QRScanner {
     constructor({
         videoElement,
         onScan,
         onError,
-        scanIntervalMs = 200,
+        scanIntervalMs = 90,
         duplicateCooldownMs = 3000,
         resumeCooldownMs = 1500,
         invalidCooldownMs = 800
@@ -41,8 +43,8 @@ export class QRScanner {
         this.stream = null;
         this.scanTimer = null;
         this.resumeTimer = null;
-        this.canvas = document.createElement('canvas');
-        this.context = this.canvas.getContext('2d', { willReadFrequently: true });
+        this.scanCanvas = document.createElement('canvas');
+        this.scanContext = this.scanCanvas.getContext('2d', { willReadFrequently: true });
         this.lastScanAttemptAt = 0;
         this.lastAcceptedValue = null;
         this.lastAcceptedAt = 0;
@@ -276,11 +278,7 @@ export class QRScanner {
                 videoWidth: this.videoElement.videoWidth,
                 videoHeight: this.videoElement.videoHeight
             });
-            this.canvas.height = this.videoElement.videoHeight;
-            this.canvas.width = this.videoElement.videoWidth;
-            this.context.drawImage(this.videoElement, 0, 0, this.canvas.width, this.canvas.height);
-
-            const code = this.decodeCanvas();
+            const code = this.decodeVideoFrame();
 
             const rawValue = code && code.data ? code.data.trim() : '';
             if (rawValue && this.canProcess(rawValue)) {
@@ -299,34 +297,68 @@ export class QRScanner {
         this.scheduleScan();
     }
 
-    decodeCanvas() {
-        const fullFrameImageData = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        const fullFrameCode = this.decodeImageData(fullFrameImageData, 'full-frame');
-        if (fullFrameCode) {
-            return fullFrameCode;
+    decodeVideoFrame() {
+        const videoWidth = this.videoElement.videoWidth;
+        const videoHeight = this.videoElement.videoHeight;
+        if (!videoWidth || !videoHeight) return null;
+
+        const cropSide = Math.round(Math.min(videoWidth, videoHeight) * CENTER_SCAN_RATIO);
+        const cropX = Math.round((videoWidth - cropSide) / 2);
+        const cropY = Math.round((videoHeight - cropSide) / 2);
+
+        const centerCode = this.decodeVideoRegion({
+            sourceX: cropX,
+            sourceY: cropY,
+            sourceWidth: cropSide,
+            sourceHeight: cropSide,
+            maxWidth: CENTER_SCAN_MAX_WIDTH,
+            passName: 'center-crop'
+        });
+        if (centerCode) {
+            return centerCode;
         }
 
-        if (this.canvas.width <= SCAN_MAX_WIDTH) {
-            return null;
+        return this.decodeVideoRegion({
+            sourceX: 0,
+            sourceY: 0,
+            sourceWidth: videoWidth,
+            sourceHeight: videoHeight,
+            maxWidth: FULL_SCAN_MAX_WIDTH,
+            passName: 'full-frame-scaled'
+        });
+    }
+
+    decodeVideoRegion({ sourceX, sourceY, sourceWidth, sourceHeight, maxWidth, passName }) {
+        const scale = Math.min(1, maxWidth / sourceWidth);
+        const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
+        const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+
+        if (this.scanCanvas.width !== targetWidth) {
+            this.scanCanvas.width = targetWidth;
+        }
+        if (this.scanCanvas.height !== targetHeight) {
+            this.scanCanvas.height = targetHeight;
         }
 
-        const scale = SCAN_MAX_WIDTH / this.canvas.width;
-        const scaledWidth = Math.round(this.canvas.width * scale);
-        const scaledHeight = Math.round(this.canvas.height * scale);
-        const scaledCanvas = document.createElement('canvas');
-        const scaledContext = scaledCanvas.getContext('2d', { willReadFrequently: true });
+        this.scanContext.drawImage(
+            this.videoElement,
+            sourceX,
+            sourceY,
+            sourceWidth,
+            sourceHeight,
+            0,
+            0,
+            targetWidth,
+            targetHeight
+        );
 
-        scaledCanvas.width = scaledWidth;
-        scaledCanvas.height = scaledHeight;
-        scaledContext.drawImage(this.canvas, 0, 0, scaledWidth, scaledHeight);
-
-        const scaledImageData = scaledContext.getImageData(0, 0, scaledWidth, scaledHeight);
-        return this.decodeImageData(scaledImageData, 'scaled-frame');
+        const imageData = this.scanContext.getImageData(0, 0, targetWidth, targetHeight);
+        return this.decodeImageData(imageData, passName);
     }
 
     decodeImageData(imageData, passName) {
         const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: 'attemptBoth'
+            inversionAttempts: 'dontInvert'
         });
 
         if (code && code.data) {
