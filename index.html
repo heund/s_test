@@ -12,6 +12,7 @@
     <title>PWA demo</title>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://unpkg.com/@rive-app/webgl2@2.38.0/rive.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -48,7 +49,10 @@
                     </div>
 
                     <section class="pwa-view home-view is-active" id="homeView" data-view="home" aria-label="Home">
-                        <div class="view-panel">
+                        <div class="view-panel home-panel">
+                            <div class="home-rive-stage">
+                                <canvas id="homeRiveCanvas" class="home-rive-canvas" aria-label="Interactive animation"></canvas>
+                            </div>
                             <h1>PWA demo</h1>
                             <p>QR deity collection bare mechanics build.</p>
                             <p>Choose Map, Camera, or Collection.</p>
